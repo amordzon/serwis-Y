@@ -111,4 +111,42 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getUser, updateUser, deleteUser };
+const followUser = async (req, res) => {
+  try {
+    const id = req.params.userID;
+    const user = await User.findById(req.user._id);
+    if (id == user._id) {
+      return res.status(500).json({
+        success: false,
+        message: 'You cannot follow yourself!',
+      });
+    }
+    const found = user.following.includes(id);
+    if (found) {
+      await user.following.pull({ _id: id });
+      await user.save();
+      return res.status(200).json({
+        success: true,
+        message: 'Unfollowed user',
+        user,
+      });
+    } else {
+      await user.following.push({ _id: id });
+      await user.save();
+      return res.status(200).json({
+        success: true,
+        message: 'Followed user',
+        user,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err,
+    });
+  }
+};
+
+module.exports = { getAllUsers, getUser, updateUser, deleteUser, followUser };
