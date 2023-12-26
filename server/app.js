@@ -2,12 +2,23 @@ const express = require('express');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const passport = require('passport');
+
+const userRouter = require('./routes/user');
+const authRouter = require('./routes/auth');
+
+require('./auth/passportAuth')(passport);
 
 dotenv.config();
 
 const app = express();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(passport.initialize());
+
+app.use('/users', passport.authenticate('jwt', { session: false }), userRouter);
+app.use('/auth', authRouter);
 
 mongoose
   .connect(
