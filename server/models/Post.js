@@ -12,9 +12,10 @@ const PostSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    comments: {
+    refPost: {
       type: mongoose.Schema.ObjectId,
       ref: 'Post',
+      required: false,
     },
     viewsCount: {
       type: Number,

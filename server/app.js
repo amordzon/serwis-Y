@@ -6,6 +6,7 @@ const passport = require('passport');
 
 const userRouter = require('./routes/user');
 const authRouter = require('./routes/auth');
+const postRouter = require('./routes/post');
 
 require('./auth/passportAuth')(passport);
 
@@ -18,6 +19,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 
 app.use('/users', passport.authenticate('jwt', { session: false }), userRouter);
+app.use('/posts', passport.authenticate('jwt', { session: false }), postRouter);
 app.use('/auth', authRouter);
 
 mongoose
