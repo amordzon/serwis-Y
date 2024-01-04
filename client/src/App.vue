@@ -15,4 +15,8 @@ body {
   background-color: #000000;
   color: #e7e9ea;
 }
+
+iframe#webpack-dev-server-client-overlay {
+  display: none !important;
+}
 </style>

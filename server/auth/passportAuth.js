@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const LocalStrategy = require('passport-local').Strategy;
+
 const User = require('../models/User');
 
 const JWTstrategy = require('passport-jwt').Strategy;
@@ -17,7 +18,7 @@ module.exports = function (passport) {
       async (email, password, done) => {
         try {
           const user = await User.findOne({ email: email });
-          if (!user) {
+          if (!user || user.isOAuth) {
             return done(null, false);
           }
 

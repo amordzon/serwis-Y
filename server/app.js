@@ -5,13 +5,12 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const cors = require('cors');
 
+dotenv.config();
 const userRouter = require('./routes/user');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 
 require('./auth/passportAuth')(passport);
-
-dotenv.config();
 
 const app = express();
 

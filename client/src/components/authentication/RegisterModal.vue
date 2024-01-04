@@ -199,6 +199,9 @@ export default {
           })
           .catch((error) => {
             console.log("error ", error);
+            console.log(error);
+
+            this.$emit("emit-error", error);
           });
       }
     },
