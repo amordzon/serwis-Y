@@ -17,7 +17,7 @@
               loading="lazy"
               alt="google logo"
             />
-            <span>Sign up with Google</span>
+            <span @click="googleAuth">Sign in with Google</span>
           </button>
         </div>
         <hr class="h-px my-4 bg-gray-600 border-0" />
@@ -49,10 +49,12 @@
     <RegisterModal
       :showSignUpModal="showSignUpModal"
       @close-modal="closeSignUpModal"
+      @emit-error="emitError"
     ></RegisterModal>
     <LoginModal
       :showLogInModal="showLogInModal"
       @close-modal="closeLogInModal"
+      @emit-error="emitError"
     ></LoginModal>
   </div>
 </template>
@@ -60,6 +62,9 @@
 <script>
 import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
+import { googleSdkLoaded } from "vue3-google-login";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 export default {
   name: "AuthenticationPage",
@@ -79,6 +84,57 @@ export default {
     },
     closeLogInModal() {
       this.showLogInModal = false;
+    },
+
+    emitError(error) {
+      Swal.fire({
+        toast: true,
+        title: error.response.data.message,
+        animation: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1000,
+        background: "#1d9bf0",
+        color: "white",
+        timerProgressBar: false,
+        padding: "0.5em 0 0.5em",
+      });
+    },
+
+    googleAuth() {
+      googleSdkLoaded((google) => {
+        google.accounts.oauth2
+          .initCodeClient({
+            client_id: process.env.VUE_APP_CLIENT_ID,
+            scope: "email profile openid",
+            redirect_uri: process.env.VUE_APP_REDIRECT_URL,
+            callback: (response) => {
+              if (response.code) {
+                this.sendCodeToBackend(response.code);
+              }
+            },
+          })
+          .requestCode();
+      });
+    },
+    async sendCodeToBackend(code) {
+      try {
+        const headers = {
+          Authorization: code,
+        };
+        await axios
+          .get("http://localhost:3000/auth/google", { headers })
+          .then((response) => {
+            const userDetails = response.data;
+            console.log("User Details:", userDetails);
+          })
+          .catch((error) => {
+            console.log("error ", error);
+            this.emitError(error);
+          });
+      } catch (error) {
+        console.error("Failed to send authorization code:", error);
+      }
     },
   },
 };

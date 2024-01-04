@@ -27,9 +27,6 @@
             placeholder="Password"
             v-model="form.password"
           />
-          <span v-if="error" class="text-red-500 w-3/4 mt-2 pl-3">{{
-            error
-          }}</span>
           <button
             class="mt-14 mb-6 bg-sky-500 hover:bg-sky-600 font-semibold py-3 w-3/4 rounded-full"
             type="submit"
@@ -57,7 +54,6 @@ export default {
         email: "",
         password: "",
       },
-      error: "",
     };
   },
   methods: {
@@ -70,15 +66,13 @@ export default {
         })
         .catch((error) => {
           console.log("error ", error);
-          this.error = error.response.data.error;
+          this.$emit("emit-error", error);
         });
     },
     resetForm() {
       Object.keys(this.form).forEach((key) => {
         this.form[key] = "";
       });
-
-      this.error = "";
     },
     resetAndClose() {
       this.resetForm();
