@@ -65,6 +65,7 @@ import LoginModal from "./LoginModal";
 import { googleSdkLoaded } from "vue3-google-login";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { mapGetters } from "vuex";
 
 export default {
   name: "AuthenticationPage",
@@ -77,6 +78,15 @@ export default {
       showSignUpModal: false,
       showLogInModal: false,
     };
+  },
+  mounted() {
+    if (this.isLogged) {
+      this.$router.push("/home");
+    }
+  },
+
+  computed: {
+    ...mapGetters("user", ["isLogged"]),
   },
   methods: {
     closeSignUpModal() {
@@ -124,9 +134,14 @@ export default {
         };
         await axios
           .get("http://localhost:3000/auth/google", { headers })
-          .then((response) => {
+          .then(async (response) => {
             const userDetails = response.data;
             console.log("User Details:", userDetails);
+            await this.$store.dispatch("user/logIn", {
+              user: response.data.user.user,
+              jwt: response.data.user.token,
+            });
+            this.$router.push("/home");
           })
           .catch((error) => {
             console.log("error ", error);

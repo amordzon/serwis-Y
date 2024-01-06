@@ -138,7 +138,7 @@ const googleAuth = async (req, res) => {
         message: 'Logged in successfully',
         user: {
           token,
-          User: existingUser,
+          user: existingUser,
         },
       });
     } else if (existingUser) {
@@ -162,7 +162,7 @@ const googleAuth = async (req, res) => {
       message: 'New user created and logged in successfully',
       user: {
         token,
-        User: newUser,
+        user: newUser,
       },
     });
   } catch (error) {
