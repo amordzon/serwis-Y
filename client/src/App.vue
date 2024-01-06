@@ -1,6 +1,6 @@
 <template>
-  <div class="m-4 p-4">
-    <router-view class="mx-auto my-4 mx-6"></router-view>
+  <div>
+    <router-view></router-view>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-center">
+  <div class="flex justify-center m-4 px-4 pb-4 pt-8">
     <div class="w-1/2 px-6 text-center">
       <h1 class="__logo">Y</h1>
     </div>
