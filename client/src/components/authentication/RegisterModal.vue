@@ -193,9 +193,14 @@ export default {
       if (noErrors) {
         axios
           .post("http://localhost:3000/auth/register", this.form)
-          .then((response) => {
+          .then(async (response) => {
             console.log(response);
             this.resetAndClose();
+            await this.$store.dispatch("user/logIn", {
+              user: response.data.user.user,
+              jwt: response.data.user.token,
+            });
+            this.$router.push("/home");
           })
           .catch((error) => {
             console.log("error ", error);
