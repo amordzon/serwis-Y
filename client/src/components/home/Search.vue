@@ -1,5 +1,5 @@
 <template>
-  <div class="text-gray-300 w-full py-2 px-4 pb-0">
+  <div class="text-gray-300 w-full py-2 px-4 pb-0 h-screen sticky top-0">
     <button type="submit" class="absolute ml-4 mt-2 mr-4">
       <font-awesome-icon
         icon="fa-solid fa-magnifying-glass"

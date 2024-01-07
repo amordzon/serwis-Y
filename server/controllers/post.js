@@ -1,13 +1,34 @@
 const Post = require('../models/Post');
+const User = require('../models/User');
 
 const getPosts = async (req, res) => {
   try {
-    const allPosts = await Post.find({})
-      .populate('refPost')
-      .populate('quotedPost')
+    const postType = req.query.tweetsType;
+    let condition = {};
+    if (postType == 'following') {
+      const currUser = await User.findById(req.user._id).exec();
+      const followingIds = currUser.following.map(
+        (followedUser) => followedUser._id
+      );
+      condition = { user: { $in: followingIds } };
+    }
+    const allPosts = await Post.find(condition)
+      .populate('user')
+      .populate({
+        path: 'refPost',
+        populate: {
+          path: 'user',
+        },
+      })
+      .populate({
+        path: 'quotedPost',
+        populate: {
+          path: 'user',
+        },
+      })
+      .sort({ createdAt: -1 })
       .exec();
 
-    console.log(allPosts);
     return res.status(200).json({
       success: true,
       message: 'All posts',
@@ -56,6 +77,13 @@ const createPost = async (req, res) => {
     const quoted = req.body.quoted;
     const base = req.body.base;
 
+    if (!req.body.body) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide tweet body!',
+      });
+    }
+
     let post = new Post({
       user: author,
       body: req.body.body,
@@ -83,7 +111,10 @@ const createPost = async (req, res) => {
       post.quotedPost = quotedPost._id;
     }
 
-    const createdPost = await post.save();
+    let createdPost = await post.save();
+    createdPost = await Post.findById(createdPost._id)
+      .populate('refPost quotedPost user')
+      .exec();
     return res.status(201).json({
       success: true,
       message: 'New post created successfully',
