@@ -9,6 +9,8 @@ import {
   faMagnifyingGlass,
   faRetweet,
   faChartSimple,
+  faArrowLeft,
+  faCalendarDays,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faUser,
@@ -25,7 +27,9 @@ library.add(
   faImage,
   faComment,
   faRetweet,
-  faChartSimple
+  faChartSimple,
+  faArrowLeft,
+  faCalendarDays
 );
 
 createApp(App)

@@ -2,7 +2,7 @@
   <div class="flex">
     <SideBar></SideBar>
     <div class="w-6/12 border-r border-r-gray-700">
-      <Tweets></Tweets>
+      <UserDetails></UserDetails>
     </div>
     <div class="w-3/12">
       <Search></Search>
@@ -12,15 +12,15 @@
 
 <script>
 import SideBar from "../SideBar";
-import Tweets from "./Tweets";
 import Search from "../Search";
+import UserDetails from "./UserDetails.vue";
 
 export default {
   name: "HomePage",
   components: {
     SideBar,
-    Tweets,
     Search,
+    UserDetails,
   },
 };
 </script>

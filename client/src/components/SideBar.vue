@@ -9,12 +9,12 @@
         class="px-2 py-2 text-4xl font-bold leading-6 rounded-full hover:bg-gray-900 text-white cursor-pointer"
         >Y
       </router-link>
-      <a
+      <router-link
+        to="/"
         class="group flex items-center px-2 py-3 mt-2 text-xl leading-6 rounded-full hover:bg-gray-900 text-white cursor-pointer"
-        target="_blank"
       >
         <font-awesome-icon icon="fa-solid fa-house" class="mr-4 h-6 w-6" /> Home
-      </a>
+      </router-link>
       <a
         class="mt-1 group flex items-center px-2 py-3 text-xl leading-6 rounded-full hover:bg-gray-900 cursor-pointer"
         target="_blank"
@@ -26,13 +26,13 @@
 
         Explore
       </a>
-      <a
+      <router-link
+        :to="'/profile/' + user.user.username"
         class="mt-1 group flex items-center px-2 py-3 text-xl leading-6 rounded-full hover:bg-gray-900 cursor-pointer"
-        target="_blank"
       >
         <font-awesome-icon icon="fa-regular fa-user" class="mr-4 h-6 w-6" />
         Profile
-      </a>
+      </router-link>
 
       <button
         class="bg-sky-500 hover:bg-sky-600 w-full mt-8 text-white font-bold py-3 px-4 rounded-full"
