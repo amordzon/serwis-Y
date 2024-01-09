@@ -12,22 +12,104 @@ const getPosts = async (req, res) => {
       );
       condition = { user: { $in: followingIds } };
     }
-    const allPosts = await Post.find(condition)
-      .populate('user')
-      .populate({
-        path: 'refPost',
-        populate: {
-          path: 'user',
+
+    const allPosts = await Post.aggregate([
+      { $match: condition },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: '_id',
+          foreignField: 'quotedPost',
+          as: 'quotedPostsCount',
         },
-      })
-      .populate({
-        path: 'quotedPost',
-        populate: {
-          path: 'user',
+      },
+      {
+        $addFields: {
+          quotedPostsCount: { $size: '$quotedPostsCount' },
         },
-      })
-      .sort({ createdAt: -1 })
-      .exec();
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: 'refPost',
+          foreignField: '_id',
+          as: 'refPostCount',
+        },
+      },
+      {
+        $addFields: {
+          refPostCount: { $size: '$refPostCount' },
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      { $unwind: '$user' },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: 'refPost',
+          foreignField: '_id',
+          as: 'refPost',
+        },
+      },
+      {
+        $unwind: {
+          path: '$refPost',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: 'quotedPost',
+          foreignField: '_id',
+          as: 'quotedPost',
+        },
+      },
+      {
+        $unwind: {
+          path: '$quotedPost',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'refPost.user',
+          foreignField: '_id',
+          as: 'refPost.user',
+        },
+      },
+      {
+        $unwind: {
+          path: '$refPost.user',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'quotedPost.user',
+          foreignField: '_id',
+          as: 'quotedPost.user',
+        },
+      },
+      {
+        $unwind: {
+          path: '$quotedPost.user',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]);
 
     return res.status(200).json({
       success: true,
@@ -55,6 +137,9 @@ const getPost = async (req, res) => {
         message: 'Post not found',
       });
     }
+
+    const count = await Post.countDocuments({ quotedPost: id });
+    console.log(count);
 
     return res.status(200).json({
       success: true,

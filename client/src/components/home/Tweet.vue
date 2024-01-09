@@ -20,7 +20,7 @@
             </p>
 
             <div
-              v-if="tweet.refPost"
+              v-if="tweet.refPost.user"
               class="text-sm font-medium text-gray-400 mb-4"
             >
               Replying to @{{ tweet.refPost.user.username }}
@@ -52,7 +52,7 @@
                   icon="fa-regular fa-comment"
                   class="text-center h-5 w-5 mr-2"
                 />
-                12
+                {{ tweet.refPostCount }}
               </a>
             </div>
 
@@ -65,7 +65,7 @@
                   icon="fa-solid fa-retweet"
                   class="text-center h-5 w-5 mr-2"
                 />
-                3
+                {{ tweet.quotedPostsCount }}
               </a>
             </div>
 
