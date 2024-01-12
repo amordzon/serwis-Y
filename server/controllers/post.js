@@ -198,7 +198,19 @@ const createPost = async (req, res) => {
 
     let createdPost = await post.save();
     createdPost = await Post.findById(createdPost._id)
-      .populate('refPost quotedPost user')
+      .populate('user')
+      .populate({
+        path: 'quotedPost',
+        populate: {
+          path: 'user',
+        },
+      })
+      .populate({
+        path: 'refPost',
+        populate: {
+          path: 'user',
+        },
+      })
       .exec();
     return res.status(201).json({
       success: true,

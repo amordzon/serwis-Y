@@ -5,16 +5,17 @@
       @change-tweets-type="changeTweetsType"
     ></TweetsType>
     <NewPost @add-post="addPost"></NewPost>
+
+    <hr class="border-gray-700" />
     <Tweet v-for="tweet in allTweets" :tweet="tweet" :key="tweet.id"></Tweet>
   </div>
 </template>
 
 <script>
-import axios from "axios";
 import Tweet from "./Tweet";
 import TweetsType from "./TweetsType";
 import NewPost from "./NewPost";
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "TweetsComponent",
@@ -23,19 +24,14 @@ export default {
     TweetsType,
     NewPost,
   },
-  data() {
-    return {
-      allTweets: [],
-      tweetsType: "following",
-    };
+  computed: {
+    ...mapGetters("tweet", ["allTweets", "tweetsType"]),
+    ...mapGetters("user", ["jwt"]),
   },
   mounted() {
     if (this.jwt) {
       this.getAllTweets();
     }
-  },
-  computed: {
-    ...mapGetters("user", ["jwt"]),
   },
   watch: {
     tweetsType() {
@@ -43,25 +39,12 @@ export default {
     },
   },
   methods: {
+    ...mapActions("tweet", ["fetchTweets", "changeTweetsType", "addTweet"]),
     async getAllTweets() {
-      await axios
-        .get("http://localhost:3000/posts?tweetsType=" + this.tweetsType, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
-        .then((response) => {
-          this.allTweets = response.data.posts;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-    changeTweetsType(type) {
-      this.tweetsType = type;
+      await this.fetchTweets();
     },
     addPost(post) {
-      this.allTweets.unshift(post);
+      this.addTweet(post);
     },
   },
 };
