@@ -21,7 +21,7 @@
               </p>
 
               <div
-                v-if="quotedPost.refPost"
+                v-if="quotedPost.refPost && quotedPost.refPost.user"
                 class="text-sm font-medium text-gray-400 mb-4"
               >
                 Replying to @{{ quotedPost.refPost.user.username }}

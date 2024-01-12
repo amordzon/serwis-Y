@@ -20,6 +20,15 @@
         </div>
       </div>
 
+      <div class="w-4/5 ml-16">
+        <QuotedTweet
+          v-if="quotedPost && quotedPost.user"
+          :quotedPost="quotedPost"
+          :createdDateWithArg="createdDateWithArg"
+        >
+        </QuotedTweet>
+      </div>
+
       <div class="flex">
         <div class="w-10"></div>
 
@@ -48,7 +57,6 @@
         </div>
       </div>
     </form>
-    <hr class="border-gray-700" />
   </div>
 </template>
 
@@ -56,9 +64,15 @@
 import axios from "axios";
 import { mapGetters } from "vuex";
 import Swal from "sweetalert2";
+import QuotedTweet from "../home/QuotedTweet";
+import moment from "moment";
 
 export default {
   name: "NewPost",
+  components: {
+    QuotedTweet,
+  },
+  props: ["quotedPost"],
   data() {
     return {
       body: "",
@@ -66,21 +80,26 @@ export default {
   },
   computed: {
     ...mapGetters("user", ["jwt"]),
+    createdDateWithArg() {
+      return (arg) => {
+        return moment(arg).fromNow();
+      };
+    },
   },
   methods: {
     async handleSubmission() {
+      const reqBody = {
+        body: this.body,
+      };
+      if (this.quotedPost) {
+        reqBody.quoted = this.quotedPost._id;
+      }
       axios
-        .post(
-          "http://localhost:3000/posts",
-          {
-            body: this.body,
+        .post("http://localhost:3000/posts", reqBody, {
+          headers: {
+            Authorization: `Bearer ${this.jwt}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+        })
         .then(async (response) => {
           console.log(response);
           this.resetForm();

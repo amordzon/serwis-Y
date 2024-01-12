@@ -35,10 +35,12 @@
       </router-link>
 
       <button
-        class="bg-sky-500 hover:bg-sky-600 w-full mt-8 text-white font-bold py-3 px-4 rounded-full"
+        class="bg-sky-500 cursor-pointer hover:bg-sky-600 w-full mt-8 text-white font-bold py-3 px-4 rounded-full"
+        @click="showModal"
       >
         Post
       </button>
+      <PostModal></PostModal>
     </nav>
 
     <div
@@ -70,9 +72,14 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from "vuex";
+import { mapState, mapGetters, mapActions } from "vuex";
+import PostModal from "./post/PostModal";
+
 export default {
   name: "SideBar",
+  components: {
+    PostModal,
+  },
   mounted() {
     if (!this.isLogged) {
       this.$router.push("/");
@@ -81,6 +88,9 @@ export default {
   computed: {
     ...mapState(["user"]),
     ...mapGetters("user", ["isLogged"]),
+  },
+  methods: {
+    ...mapActions("postModal", ["showModal"]),
   },
 };
 </script>

@@ -20,7 +20,7 @@
             </p>
 
             <div
-              v-if="tweet.refPost.user"
+              v-if="tweet.refPost && tweet.refPost.user"
               class="text-sm font-medium text-gray-400 mb-4"
             >
               Replying to @{{ tweet.refPost.user.username }}
@@ -52,20 +52,21 @@
                   icon="fa-regular fa-comment"
                   class="text-center h-5 w-5 mr-2"
                 />
-                {{ tweet.refPostCount }}
+                {{ tweet.refPostCount ? tweet.refPostCount : 0 }}
               </a>
             </div>
 
             <div class="flex-1 text-center py-2 m-2">
               <a
-                class="group flex items-center text-gray-500 px-3 py-2 text-base font-light rounded-full"
+                class="group flex items-center text-gray-500 px-3 py-2 text-base font-light rounded-full cursor-pointer"
                 target="_blank"
+                @click="quotePost"
               >
                 <font-awesome-icon
                   icon="fa-solid fa-retweet"
                   class="text-center h-5 w-5 mr-2"
                 />
-                {{ tweet.quotedPostsCount }}
+                {{ tweet.quotedPostsCount ? tweet.quotedPostsCount : 0 }}
               </a>
             </div>
 
@@ -92,11 +93,18 @@
 <script>
 import moment from "moment";
 import QuotedTweet from "./QuotedTweet";
+import { mapActions } from "vuex";
 
 export default {
   name: "TweetComponent",
   components: {
     QuotedTweet,
+  },
+  data() {
+    return {
+      showPostModal: false,
+      quotedPost: {},
+    };
   },
   props: ["tweet"],
   computed: {
@@ -104,6 +112,16 @@ export default {
       return (arg) => {
         return moment(arg).fromNow();
       };
+    },
+  },
+  methods: {
+    ...mapActions("postModal", ["showModal", "setQuotedPost"]),
+    closePostModal() {
+      this.showPostModal = false;
+    },
+    quotePost() {
+      this.showModal();
+      this.setQuotedPost({ ...this.tweet });
     },
   },
 };
