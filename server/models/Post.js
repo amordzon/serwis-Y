@@ -36,4 +36,38 @@ const PostSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+PostSchema.pre('aggregate', async function () {
+  this.pipeline().unshift(
+    {
+      $lookup: {
+        from: 'posts',
+        localField: '_id',
+        foreignField: 'quotedPost',
+        as: 'quotedPostsCount',
+      },
+    },
+    {
+      $addFields: {
+        quotedPostsCount: { $size: '$quotedPostsCount' },
+      },
+    }
+  );
+
+  this.pipeline().unshift(
+    {
+      $lookup: {
+        from: 'posts',
+        localField: '_id',
+        foreignField: 'refPost',
+        as: 'refPostCount',
+      },
+    },
+    {
+      $addFields: {
+        refPostCount: { $size: '$refPostCount' },
+      },
+    }
+  );
+});
+
 module.exports = mongoose.model('Post', PostSchema);

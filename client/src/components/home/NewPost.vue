@@ -14,7 +14,7 @@
             class="bg-transparent text-gray-400 font-normal text-xl w-full"
             rows="2"
             cols="50"
-            placeholder="What's happening?!"
+            :placeholder="getPlaceholderText"
             v-model="body"
           ></textarea>
         </div>
@@ -22,7 +22,7 @@
 
       <div class="w-4/5 ml-16">
         <QuotedTweet
-          v-if="quotedPost && quotedPost.user"
+          v-if="quotedPost && quotedPost.user && !refPost"
           :quotedPost="quotedPost"
           :createdDateWithArg="createdDateWithArg"
         >
@@ -72,7 +72,7 @@ export default {
   components: {
     QuotedTweet,
   },
-  props: ["quotedPost"],
+  props: ["quotedPost", "refPost"],
   data() {
     return {
       body: "",
@@ -85,6 +85,9 @@ export default {
         return moment(arg).fromNow();
       };
     },
+    getPlaceholderText() {
+      return this.refPost ? "Post your reply" : "What's happening?!";
+    },
   },
   methods: {
     async handleSubmission() {
@@ -93,6 +96,9 @@ export default {
       };
       if (this.quotedPost) {
         reqBody.quoted = this.quotedPost._id;
+      }
+      if (this.refPost) {
+        reqBody.base = this.refPost;
       }
       axios
         .post("http://localhost:3000/posts", reqBody, {
