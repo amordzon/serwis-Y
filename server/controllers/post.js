@@ -105,6 +105,29 @@ const getPosts = async (req, res) => {
   }
 };
 
+const getUsersPosts = async (req, res) => {
+  try {
+    const user = new mongoose.Types.ObjectId(req.params.userID);
+    let condition = { user: user };
+    const allUserPosts = await aggregatePost(condition, {
+      $sort: { createdAt: -1 },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'All users posts',
+      posts: allUserPosts,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err,
+    });
+  }
+};
+
 const getPost = async (req, res) => {
   try {
     const postID = req.params.postID;
@@ -113,7 +136,6 @@ const getPost = async (req, res) => {
     const foundPost = await aggregatePost(condition, {
       $sort: { createdAt: -1 },
     });
-    console.log(foundPost);
     if (foundPost.length <= 0) {
       return res.status(404).json({
         success: false,
@@ -236,4 +258,4 @@ const createPost = async (req, res) => {
   }
 };
 
-module.exports = { getPosts, getPost, createPost };
+module.exports = { getPosts, getUsersPosts, getPost, createPost };

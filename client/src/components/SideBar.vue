@@ -46,7 +46,10 @@
     <div
       class="flex-shrink-0 flex hover:bg-blue-00 rounded-full p-4 mt-12 mr-2"
     >
-      <a class="flex-shrink-0 group block" target="_blank">
+      <router-link
+        :to="'/profile/' + user.user.username"
+        class="flex-shrink-0 group block"
+      >
         <div class="flex items-center">
           <div>
             <img
@@ -66,7 +69,7 @@
             </p>
           </div>
         </div>
-      </a>
+      </router-link>
     </div>
   </div>
 </template>

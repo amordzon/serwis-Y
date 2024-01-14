@@ -1,17 +1,16 @@
 <template>
-  <div class="sticky top-0">
+  <div class="sticky top-0 bg-black z-40">
     <div class="flex justify-start mt-2">
       <div class="px-5 py-2">
-        <a
-          href=""
+        <router-link
+          to="/"
           class="text-2xl font-medium rounded-full text-gray-200 hover:bg-gray-800 float-right"
-          target="_blank"
         >
           <font-awesome-icon
             icon="fa-solid fa-arrow-left"
             class="m-2 h-5 w-5"
           />
-        </a>
+        </router-link>
       </div>
       <div class="mx-2">
         <h2 class="mb-0 text-xl font-bold text-white">{{ user.name }}</h2>
