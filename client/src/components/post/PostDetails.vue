@@ -5,9 +5,8 @@
       <div class="flex justify-start mt-2">
         <div class="px-5 py-2">
           <a
-            href=""
-            class="text-2xl font-medium rounded-full text-gray-200 hover:bg-gray-800 float-right"
-            target="_blank"
+            @click="$router.go(-1)"
+            class="cursor-pointer text-2xl font-medium rounded-full text-gray-200 hover:bg-gray-800 float-right"
           >
             <font-awesome-icon
               icon="fa-solid fa-arrow-left"

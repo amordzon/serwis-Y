@@ -35,7 +35,6 @@ export default {
     ...mapActions("tweet", ["addTweet"]),
     ...mapActions("postModal", ["hideModal", "setQuotedPost"]),
     close() {
-      console.log("zamknij");
       this.hideModal();
       this.setQuotedPost({});
     },

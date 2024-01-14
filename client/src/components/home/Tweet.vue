@@ -17,7 +17,9 @@
             </div>
             <div class="ml-3 flex flex-col">
               <p class="text-base font-medium text-white">
-                {{ tweet.user.name }}
+                <router-link :to="'/profile/' + tweet.user.username">{{
+                  tweet.user.name
+                }}</router-link>
                 <span class="text-sm font-medium text-gray-400">
                   @{{ tweet.user.username }} ·
                   {{ createdDateWithArg(tweet.createdAt) }}

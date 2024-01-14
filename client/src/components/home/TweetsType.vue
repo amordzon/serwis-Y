@@ -1,5 +1,5 @@
 <template>
-  <div class="sticky top-0 bg-black">
+  <div class="sticky top-0 bg-black z-40">
     <div class="flex justify-around text-center">
       <h2
         class="px-4 py-3 text-base font-semibold text-gray-500 hover:bg-gray-800 w-full cursor-pointer"

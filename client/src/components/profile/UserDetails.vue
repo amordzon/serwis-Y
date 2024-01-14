@@ -60,6 +60,9 @@
       </div>
       <hr class="border-gray-700" />
     </div>
+    <div>
+      <Tweet v-for="tweet in tweets" :tweet="tweet" :key="tweet.id"></Tweet>
+    </div>
   </div>
 </template>
 
@@ -68,15 +71,18 @@ import ProfileNavbar from "./ProfileNavbar";
 import axios from "axios";
 import moment from "moment";
 import { mapGetters } from "vuex";
+import Tweet from "../home/Tweet";
 
 export default {
   name: "UserDetails",
   components: {
     ProfileNavbar,
+    Tweet,
   },
   data() {
     return {
       user: {},
+      tweets: {},
     };
   },
   computed: {
@@ -103,6 +109,21 @@ export default {
         })
         .then((response) => {
           this.user = response.data.user;
+          this.getUserPosts(this.user._id);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async getUserPosts(userID) {
+      await axios
+        .get("http://localhost:3000/posts/user/" + userID, {
+          headers: {
+            Authorization: `Bearer ${this.jwt}`,
+          },
+        })
+        .then((response) => {
+          this.tweets = response.data.posts;
         })
         .catch((error) => {
           console.log(error);
