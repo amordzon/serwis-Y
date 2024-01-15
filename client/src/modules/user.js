@@ -20,6 +20,14 @@ export default {
     SET_IS_LOGGED(state, isLogged) {
       state.isLogged = isLogged;
     },
+    SET_FOLLOW_USER(state, userToFollow) {
+      state.user.following.unshift(userToFollow);
+    },
+    SET_UNFOLLOW_USER(state, userToUnfollow) {
+      state.user.following = state.user.following.filter(
+        (user) => user !== userToUnfollow
+      );
+    },
   },
   actions: {
     logIn({ commit }, { user, jwt }) {
@@ -31,6 +39,12 @@ export default {
       commit("SET_USER", null);
       commit("SET_JWT", "");
       commit("SET_IS_LOGGED", false);
+    },
+    followUser({ commit }, userToFollow) {
+      commit("SET_FOLLOW_USER", userToFollow);
+    },
+    unfollowUser({ commit }, userToUnfollow) {
+      commit("SET_UNFOLLOW_USER", userToUnfollow);
     },
   },
 };

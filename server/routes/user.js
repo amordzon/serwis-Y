@@ -7,6 +7,6 @@ userRouter.get('/', userController.getAllUsers);
 userRouter.get('/user/:username', userController.getUser);
 userRouter.put('/:userID', userController.updateUser);
 userRouter.delete('/:userID', userController.deleteUser);
-userRouter.get('/follow/:userID', userController.followUser);
+userRouter.patch('/follow', userController.followUser);
 
 module.exports = userRouter;
