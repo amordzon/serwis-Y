@@ -20,17 +20,17 @@
       </div>
       <div v-if="post.user">
         <Tweet
-          v-for="tweet in post.ancestors"
+          v-for="tweet in ancestors"
           :tweet="tweet"
           :key="tweet.id"
           mode="ancestor"
         ></Tweet>
-        <Tweet :tweet="post" mode="view"></Tweet>
+        <Tweet :tweet="post" mode="view" ref="currTweetRef"></Tweet>
         <hr class="border-gray-700" />
         <NewPost :refPost="post._id" @add-post="addCommentPost"></NewPost>
         <hr class="border-gray-700" />
         <Tweet
-          v-for="tweet in post.comments"
+          v-for="tweet in comments"
           :tweet="tweet"
           :key="tweet.id"
           mode="view"
@@ -50,6 +50,8 @@ import Tweet from "../home/Tweet";
 import NewPost from "../home/NewPost";
 import axios from "axios";
 import { mapGetters } from "vuex";
+import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
+import { InfiniteScrollUpMixin } from "../../mixins/InfiniteScrollUpMixin";
 
 export default {
   name: "PostDetails",
@@ -59,9 +61,15 @@ export default {
     Tweet,
     NewPost,
   },
+  mixins: [InfiniteScrollDownMixin, InfiniteScrollUpMixin],
   data() {
     return {
       post: {},
+      comments: [],
+      ancestors: [],
+      pageComments: 1,
+      pageAncestors: 1,
+      ref: null,
     };
   },
   computed: {
@@ -70,10 +78,24 @@ export default {
   mounted() {
     const postID = this.$route.params.id;
     if (this.jwt) {
-      this.getPost(postID);
+      this.fetchData(postID);
     }
   },
   methods: {
+    async fetchData(postID) {
+      try {
+        await this.getPost(postID);
+        await this.getPostComments();
+        await this.getPostAncestors();
+        window.onscroll = () => {
+          this.attachInfiniteScroll(this.getPostComments);
+          this.attachInfiniteScrollUp(this.getPostAncestors);
+        };
+        this.scrollToElement();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
     async getPost(postID) {
       await axios
         .get("http://localhost:3000/posts/post/" + postID, {
@@ -88,9 +110,68 @@ export default {
           console.log(error);
         });
     },
+    async getPostComments() {
+      await axios
+        .get(
+          "http://localhost:3000/posts/post/" +
+            this.post._id +
+            "/comments?page=" +
+            this.pageComments,
+          {
+            headers: {
+              Authorization: `Bearer ${this.jwt}`,
+            },
+          }
+        )
+        .then((response) => {
+          if (response.data.comments.length) {
+            this.comments = [...this.comments, ...response.data.comments];
+            this.pageComments++;
+          } else {
+            this.setContentOver();
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async getPostAncestors() {
+      await axios
+        .get(
+          "http://localhost:3000/posts/post/" +
+            this.post._id +
+            "/ancestors?page=" +
+            this.pageAncestors,
+          {
+            headers: {
+              Authorization: `Bearer ${this.jwt}`,
+            },
+          }
+        )
+        .then((response) => {
+          if (response.data.ancestors.length) {
+            this.ancestors = [...response.data.ancestors, ...this.ancestors];
+            this.pageAncestors++;
+          } else {
+            this.setContentUpOver();
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     addCommentPost(comment) {
-      this.post.comments.unshift(comment);
+      this.comments.unshift(comment);
       this.post.refPostCount += 1;
+    },
+    scrollToElement() {
+      if (
+        this.$refs.currTweetRef &&
+        this.$refs.currTweetRef.$el &&
+        this.ancestors.length > 0
+      ) {
+        this.$refs.currTweetRef.$el.scrollIntoView();
+      }
     },
   },
 };

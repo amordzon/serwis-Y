@@ -2,7 +2,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
-const aggregatePost = async (condition, sort) => {
+const aggregatePost = async (condition, sort, skipPosts, limitPosts) => {
   const allPosts = await Post.aggregate([
     { $match: condition },
     sort,
@@ -71,6 +71,8 @@ const aggregatePost = async (condition, sort) => {
         preserveNullAndEmptyArrays: true,
       },
     },
+    { $skip: skipPosts },
+    { $limit: limitPosts },
   ]);
   return allPosts;
 };
@@ -78,6 +80,7 @@ const aggregatePost = async (condition, sort) => {
 const getPosts = async (req, res) => {
   try {
     const postType = req.query.tweetsType;
+    const pageNum = req.query.page ? req.query.page : 1;
     let condition = {};
     if (postType == 'following') {
       const currUser = await User.findById(req.user._id).exec();
@@ -86,9 +89,15 @@ const getPosts = async (req, res) => {
       );
       condition = { user: { $in: followingIds } };
     }
-    const allPosts = await aggregatePost(condition, {
-      $sort: { createdAt: -1 },
-    });
+    const skipPosts = (pageNum - 1) * 5;
+    const allPosts = await aggregatePost(
+      condition,
+      {
+        $sort: { createdAt: -1 },
+      },
+      skipPosts,
+      5
+    );
 
     return res.status(200).json({
       success: true,
@@ -108,10 +117,17 @@ const getPosts = async (req, res) => {
 const getUsersPosts = async (req, res) => {
   try {
     const user = new mongoose.Types.ObjectId(req.params.userID);
+    const pageNum = req.query.page ? req.query.page : 1;
+    const skipPosts = (pageNum - 1) * 5;
     let condition = { user: user };
-    const allUserPosts = await aggregatePost(condition, {
-      $sort: { createdAt: -1 },
-    });
+    const allUserPosts = await aggregatePost(
+      condition,
+      {
+        $sort: { createdAt: -1 },
+      },
+      skipPosts,
+      5
+    );
 
     return res.status(200).json({
       success: true,
@@ -133,9 +149,14 @@ const getPost = async (req, res) => {
     const postID = req.params.postID;
     const id = new mongoose.Types.ObjectId(postID);
     const condition = { _id: id };
-    const foundPost = await aggregatePost(condition, {
-      $sort: { createdAt: -1 },
-    });
+    const foundPost = await aggregatePost(
+      condition,
+      {
+        $sort: { createdAt: -1 },
+      },
+      0,
+      1
+    );
     if (foundPost.length <= 0) {
       return res.status(404).json({
         success: false,
@@ -143,12 +164,57 @@ const getPost = async (req, res) => {
       });
     }
 
+    return res.status(200).json({
+      success: true,
+      message: 'Post info',
+      post: foundPost[0],
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err,
+    });
+  }
+};
+
+const getPostComments = async (req, res) => {
+  try {
+    const postID = req.params.postID;
+    const id = new mongoose.Types.ObjectId(postID);
+    const pageNum = req.query.page ? req.query.page : 1;
+    const skipPosts = (pageNum - 1) * 5;
     const comments = await aggregatePost(
       { refPost: id },
       {
         $sort: { createdAt: -1 },
-      }
+      },
+      skipPosts,
+      5
     );
+    return res.status(200).json({
+      success: true,
+      message: 'Post comments',
+      comments,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err,
+    });
+  }
+};
+
+const getPostAncestors = async (req, res) => {
+  try {
+    const postID = req.params.postID;
+    const id = new mongoose.Types.ObjectId(postID);
+    const condition = { _id: id };
+    const pageNum = req.query.page ? req.query.page : 1;
+    const skipPosts = (pageNum - 1) * 3;
     const ancestors = await Post.aggregate([
       { $match: condition },
       {
@@ -169,13 +235,16 @@ const getPost = async (req, res) => {
         _id: { $in: ancestorIds },
       },
       {
-        $sort: { createdAt: 1 },
-      }
+        $sort: { createdAt: -1 },
+      },
+      skipPosts,
+      3
     );
+    ancestorsInfo.reverse();
     return res.status(200).json({
       success: true,
-      message: 'Post info',
-      post: { ...foundPost[0], comments: comments, ancestors: ancestorsInfo },
+      message: 'Post ancestors',
+      ancestors: ancestorsInfo,
     });
   } catch (err) {
     console.log(err);
@@ -258,4 +327,11 @@ const createPost = async (req, res) => {
   }
 };
 
-module.exports = { getPosts, getUsersPosts, getPost, createPost };
+module.exports = {
+  getPosts,
+  getUsersPosts,
+  getPost,
+  createPost,
+  getPostComments,
+  getPostAncestors,
+};

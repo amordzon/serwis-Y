@@ -1,45 +1,33 @@
-import axios from "axios";
-
 export default {
   namespaced: true,
   state: {
     allTweets: [],
-    tweetsType: "following",
   },
   getters: {
     allTweets: (state) => state.allTweets,
-    tweetsType: (state) => state.tweetsType,
   },
   mutations: {
     SET_ALL_TWEETS(state, tweets) {
       state.allTweets = tweets;
     },
-    SET_TWEETS_TYPE(state, type) {
-      state.tweetsType = type;
-    },
     ADD_TWEET(state, tweet) {
       state.allTweets.unshift(tweet);
     },
+    SET_MORE_TWEETS(state, tweets) {
+      state.allTweets = [...state.allTweets, ...tweets];
+    },
+    CLEAR_TWEETS(state) {
+      state.allTweets = [];
+    },
   },
   actions: {
-    async fetchTweets({ commit, state, rootGetters }) {
-      try {
-        const jwt = rootGetters["user/jwt"];
-        const response = await axios.get(
-          `http://localhost:3000/posts?tweetsType=${state.tweetsType}`,
-          {
-            headers: {
-              Authorization: `Bearer ${jwt}`,
-            },
-          }
-        );
-        commit("SET_ALL_TWEETS", response.data.posts);
-      } catch (error) {
-        console.log(error);
+    fetchTweets({ commit }, posts) {
+      if (posts.length > 0) {
+        commit("SET_MORE_TWEETS", posts);
       }
     },
-    changeTweetsType({ commit }, type) {
-      commit("SET_TWEETS_TYPE", type);
+    clearTweets({ commit }) {
+      commit("CLEAR_TWEETS");
     },
     addTweet({ commit }, tweet) {
       commit("ADD_TWEET", tweet);
