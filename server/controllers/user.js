@@ -113,8 +113,9 @@ const deleteUser = async (req, res) => {
 
 const followUser = async (req, res) => {
   try {
-    const id = req.params.userID;
+    const id = req.body.userToFollow;
     const user = await User.findById(req.user._id);
+    const followedUser = await User.findById(id);
     if (id == user._id) {
       return res.status(500).json({
         success: false,
@@ -125,6 +126,8 @@ const followUser = async (req, res) => {
     if (found) {
       await user.following.pull({ _id: id });
       await user.save();
+      await followedUser.followers.pull({ _id: user._id });
+      await followedUser.save();
       return res.status(200).json({
         success: true,
         message: 'Unfollowed user',
@@ -133,6 +136,8 @@ const followUser = async (req, res) => {
     } else {
       await user.following.push({ _id: id });
       await user.save();
+      await followedUser.followers.push({ _id: user._id });
+      await followedUser.save();
       return res.status(200).json({
         success: true,
         message: 'Followed user',
