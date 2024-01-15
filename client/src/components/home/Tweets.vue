@@ -16,6 +16,8 @@ import Tweet from "./Tweet";
 import TweetsType from "./TweetsType";
 import NewPost from "./NewPost";
 import { mapGetters, mapActions } from "vuex";
+import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
+import axios from "axios";
 
 export default {
   name: "TweetsComponent",
@@ -24,24 +26,58 @@ export default {
     TweetsType,
     NewPost,
   },
+  data() {
+    return {
+      page: 1,
+      tweetsType: "following",
+    };
+  },
+  mixins: [InfiniteScrollDownMixin],
   computed: {
-    ...mapGetters("tweet", ["allTweets", "tweetsType"]),
+    ...mapGetters("tweet", ["allTweets"]),
     ...mapGetters("user", ["jwt"]),
   },
   mounted() {
     if (this.jwt) {
       this.getAllTweets();
+      window.onscroll = () => {
+        this.attachInfiniteScroll(this.getAllTweets);
+      };
     }
+  },
+  beforeUnmount() {
+    window.onscroll = null;
   },
   watch: {
     tweetsType() {
+      this.clearTweets();
+      this.page = 1;
       this.getAllTweets();
     },
   },
   methods: {
-    ...mapActions("tweet", ["fetchTweets", "changeTweetsType", "addTweet"]),
+    ...mapActions("tweet", ["fetchTweets", "addTweet", "clearTweets"]),
+    changeTweetsType(type) {
+      this.tweetsType = type;
+    },
     async getAllTweets() {
-      await this.fetchTweets();
+      await axios
+        .get(
+          `http://localhost:3000/posts?tweetsType=${this.tweetsType}&page=${this.page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${this.jwt}`,
+            },
+          }
+        )
+        .then(async (response) => {
+          if (response.data.posts.length) {
+            await this.fetchTweets(response.data.posts);
+            this.page++;
+          } else {
+            this.setContentOver();
+          }
+        });
     },
     addPost(post) {
       this.addTweet(post);

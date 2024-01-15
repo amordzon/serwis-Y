@@ -85,6 +85,7 @@ import axios from "axios";
 import moment from "moment";
 import { mapGetters, mapActions } from "vuex";
 import Tweet from "../home/Tweet";
+import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
 
 export default {
   name: "UserDetails",
@@ -92,10 +93,12 @@ export default {
     ProfileNavbar,
     Tweet,
   },
+  mixins: [InfiniteScrollDownMixin],
   data() {
     return {
       profileUser: {},
-      tweets: {},
+      tweets: [],
+      page: 1,
     };
   },
   computed: {
@@ -109,12 +112,22 @@ export default {
   mounted() {
     const username = this.$route.params.username;
     if (this.jwt) {
-      this.getUserDetails(username);
+      this.fetchData(username);
     }
+  },
+  beforeUnmount() {
+    window.onscroll = null;
   },
   methods: {
     ...mapActions("user", ["followUser", "unfollowUser"]),
 
+    async fetchData(username) {
+      await this.getUserDetails(username);
+
+      window.onscroll = () => {
+        this.attachInfiniteScroll(this.getUserPosts);
+      };
+    },
     async getUserDetails(username) {
       await axios
         .get("http://localhost:3000/users/user/" + username, {
@@ -130,15 +143,23 @@ export default {
           console.log(error);
         });
     },
-    async getUserPosts(userID) {
+    async getUserPosts() {
       await axios
-        .get("http://localhost:3000/posts/user/" + userID, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
+        .get(
+          `http://localhost:3000/posts/user/${this.profileUser._id}?page=${this.page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${this.jwt}`,
+            },
+          }
+        )
         .then((response) => {
-          this.tweets = response.data.posts;
+          if (response.data.posts.length) {
+            this.tweets = [...this.tweets, ...response.data.posts];
+            this.page++;
+          } else {
+            this.setContentOver();
+          }
         })
         .catch((error) => {
           console.log(error);
