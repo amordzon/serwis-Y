@@ -7,7 +7,11 @@
             <div>
               <img
                 class="inline-block h-8 w-8 rounded-full"
-                :src="quotedPost.user.avatar"
+                :src="
+                  quotedPost.user.avatar?.imageUrl
+                    ? quotedPost.user.avatar.imageUrl
+                    : 'https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg'
+                "
                 alt=""
               />
             </div>

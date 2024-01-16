@@ -11,7 +11,11 @@
             <div class="relative">
               <img
                 class="inline-block h-10 w-10 rounded-full"
-                :src="tweet.user.avatar"
+                :src="
+                  tweet.user.avatar?.imageUrl
+                    ? tweet.user.avatar.imageUrl
+                    : 'https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg'
+                "
                 alt=""
               />
             </div>

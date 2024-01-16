@@ -23,9 +23,16 @@ const UserSchema = new mongoose.Schema(
       default: false,
     },
     avatar: {
+      imageUrl: {
+        type: String,
+      },
+      publicId: {
+        type: String,
+      },
+    },
+    description: {
       type: String,
-      default:
-        'https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg',
+      required: false,
     },
     following: [
       {

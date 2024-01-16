@@ -12,7 +12,11 @@
               <div class="rounded-full relative">
                 <img
                   class="rounded-full border-4 border-gray-900 h-40 w-40"
-                  :src="profileUser.avatar"
+                  :src="
+                    profileUser.avatar?.imageUrl
+                      ? profileUser.avatar.imageUrl
+                      : 'https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg'
+                  "
                   alt=""
                 />
               </div>
@@ -22,8 +26,9 @@
             <button
               v-if="user._id == profileUser._id"
               class="border bg-black border-gray-500 text-gray-200 hover:bg-gray-900 flex items-center hover:shadow-lg font-bold py-2 px-4 rounded-3xl mr-0 ml-auto"
+              @click="showProfileEditModal = true"
             >
-              Set up profile
+              Edit profile
             </button>
             <button
               v-else
@@ -47,6 +52,9 @@
             </p>
           </div>
           <div class="mt-3">
+            <div class="text-gray-200 mt-3">
+              {{ profileUser.description }}
+            </div>
             <div class="text-gray-600 mt-3">
               <span class="flex mr-2">
                 <font-awesome-icon icon="fa-solid fa-calendar-days" />
@@ -76,6 +84,10 @@
     <div>
       <Tweet v-for="tweet in tweets" :tweet="tweet" :key="tweet.id"></Tweet>
     </div>
+    <ProfileEditModal
+      :showProfileEditModal="showProfileEditModal"
+      @close-modal="closeEditUserModal"
+    ></ProfileEditModal>
   </div>
 </template>
 
@@ -86,12 +98,14 @@ import moment from "moment";
 import { mapGetters, mapActions } from "vuex";
 import Tweet from "../home/Tweet";
 import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
+import ProfileEditModal from "./ProfileEditModal";
 
 export default {
   name: "UserDetails",
   components: {
     ProfileNavbar,
     Tweet,
+    ProfileEditModal,
   },
   mixins: [InfiniteScrollDownMixin],
   data() {
@@ -99,6 +113,7 @@ export default {
       profileUser: {},
       tweets: [],
       page: 1,
+      showProfileEditModal: false,
     };
   },
   computed: {
@@ -121,6 +136,9 @@ export default {
   methods: {
     ...mapActions("user", ["followUser", "unfollowUser"]),
 
+    closeEditUserModal() {
+      this.showProfileEditModal = false;
+    },
     async fetchData(username) {
       await this.getUserDetails(username);
 
@@ -136,7 +154,10 @@ export default {
           },
         })
         .then((response) => {
-          this.profileUser = response.data.user;
+          this.profileUser =
+            response.data.user._id == this.user._id
+              ? this.user
+              : response.data.user;
           this.getUserPosts(this.profileUser._id);
         })
         .catch((error) => {
