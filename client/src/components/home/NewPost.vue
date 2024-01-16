@@ -5,7 +5,11 @@
         <div class="m-2 w-12 py-1">
           <img
             class="h-10 w-10 rounded-full"
-            src="https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg"
+            :src="
+              user.avatar?.imageUrl
+                ? user.avatar.imageUrl
+                : 'https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg'
+            "
             alt=""
           />
         </div>
@@ -79,7 +83,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("user", ["jwt"]),
+    ...mapGetters("user", ["jwt", "user"]),
     createdDateWithArg() {
       return (arg) => {
         return moment(arg).fromNow();

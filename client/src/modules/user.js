@@ -28,6 +28,12 @@ export default {
         (user) => user !== userToUnfollow
       );
     },
+    SET_AVATAR(state, avatar) {
+      state.user.avatar.imageUrl = avatar;
+    },
+    SET_DESCRIPTION(state, description) {
+      state.user.description = description;
+    },
   },
   actions: {
     logIn({ commit }, { user, jwt }) {
@@ -45,6 +51,12 @@ export default {
     },
     unfollowUser({ commit }, userToUnfollow) {
       commit("SET_UNFOLLOW_USER", userToUnfollow);
+    },
+    editProfile({ commit }, { avatar, description }) {
+      if (avatar) {
+        commit("SET_AVATAR", avatar);
+      }
+      commit("SET_DESCRIPTION", description);
     },
   },
 };

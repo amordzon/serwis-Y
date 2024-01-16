@@ -1,5 +1,8 @@
 const User = require('../models/User');
-const bcrypt = require('bcrypt');
+const {
+  uploadToCloudinary,
+  removeFromCloudinary,
+} = require('../services/cloudinary');
 
 const getAllUsers = async (req, res) => {
   try {
@@ -48,22 +51,21 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
+    console.log(req.body);
     const id = req.params.userID;
-    const body = req.body.password
-      ? {
-          password: await bcrypt.hash(req.body.password, 10),
-          email: req.body.email,
-          name: req.body.name,
-          username: req.body.username,
-        }
-      : {
-          email: req.body.email,
-          name: req.body.name,
-          username: req.body.username,
-        };
-
+    let dataFile;
+    let body = {
+      description: req.body.description,
+    };
+    const userToUpdate = await User.findById(id);
+    if (req.file) {
+      if (userToUpdate.avatar.imageUrl) {
+        await removeFromCloudinary(userToUpdate.avatar.publicId);
+      }
+      dataFile = await uploadToCloudinary(req.file.path, 'avatar');
+      body.avatar = { imageUrl: dataFile.url, publicId: dataFile.public_id };
+    }
     const updatedUser = await User.findByIdAndUpdate(id, body, { new: true });
-
     if (!updatedUser) {
       return res.status(500).json({
         success: false,
