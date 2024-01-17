@@ -47,6 +47,7 @@ export default {
   },
   beforeUnmount() {
     window.onscroll = null;
+    this.clearTweets();
   },
   watch: {
     tweetsType() {
@@ -59,6 +60,7 @@ export default {
     ...mapActions("tweet", ["fetchTweets", "addTweet", "clearTweets"]),
     changeTweetsType(type) {
       this.tweetsType = type;
+      this.resetContentOver();
     },
     async getAllTweets() {
       await axios
@@ -76,6 +78,7 @@ export default {
             this.page++;
           } else {
             this.setContentOver();
+            console.log("dzialaj plz");
           }
         });
     },
