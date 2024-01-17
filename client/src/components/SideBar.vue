@@ -46,34 +46,44 @@
     <div
       class="flex-shrink-0 flex hover:bg-blue-00 rounded-full p-4 mt-12 mr-2"
     >
-      <router-link
-        :to="'/profile/' + user.user.username"
-        class="flex-shrink-0 group block"
-      >
-        <div class="flex items-center">
-          <div>
-            <img
-              class="inline-block h-10 w-10 rounded-full"
-              :src="
-                user.user.avatar?.imageUrl
-                  ? user.user.avatar.imageUrl
-                  : 'https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg'
-              "
-              alt=""
-            />
+      <div class="flex w-full items-center justify-between">
+        <router-link
+          :to="'/profile/' + user.user.username"
+          class="flex-shrink-0 group block w-full"
+        >
+          <div class="flex">
+            <div>
+              <img
+                class="inline-block h-10 w-10 rounded-full"
+                :src="
+                  user.user.avatar?.imageUrl
+                    ? user.user.avatar.imageUrl
+                    : 'https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg'
+                "
+                alt=""
+              />
+            </div>
+            <div class="ml-3">
+              <p class="text-base leading-6 font-medium text-white">
+                {{ user.user.name }}
+              </p>
+              <p
+                class="text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150"
+              >
+                @{{ user.user.username }}
+              </p>
+            </div>
           </div>
-          <div class="ml-3">
-            <p class="text-base leading-6 font-medium text-white">
-              {{ user.user.name }}
-            </p>
-            <p
-              class="text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150"
-            >
-              @{{ user.user.username }}
-            </p>
-          </div>
+        </router-link>
+        <div>
+          <p
+            class="cursor-pointer text-gray-300 hover:text-gray-100"
+            @click="signOut"
+          >
+            <font-awesome-icon icon="fa-solid fa-right-from-bracket " />
+          </p>
         </div>
-      </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -98,6 +108,13 @@ export default {
   },
   methods: {
     ...mapActions("postModal", ["showModal"]),
+    ...mapActions("user", ["logOut"]),
+    ...mapActions("socketio", ["disconnect"]),
+    signOut() {
+      this.logOut();
+      this.disconnect();
+      this.$router.push("/");
+    },
   },
 };
 </script>

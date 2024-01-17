@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="user">
     <form @submit.prevent="handleSubmission">
       <div class="flex ml-3 mt-2">
         <div class="m-2 w-12 py-1">

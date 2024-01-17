@@ -11,6 +11,7 @@ import {
   faChartSimple,
   faArrowLeft,
   faCalendarDays,
+  faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faUser,
@@ -29,7 +30,8 @@ library.add(
   faRetweet,
   faChartSimple,
   faArrowLeft,
-  faCalendarDays
+  faCalendarDays,
+  faRightFromBracket
 );
 
 createApp(App)
