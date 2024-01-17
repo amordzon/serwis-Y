@@ -36,10 +36,11 @@ export default {
     },
   },
   actions: {
-    logIn({ commit }, { user, jwt }) {
+    logIn({ commit, dispatch }, { user, jwt }) {
       commit("SET_USER", user);
       commit("SET_JWT", jwt);
       commit("SET_IS_LOGGED", true);
+      dispatch("socketio/setupSocketConnection", jwt, { root: true });
     },
     logOut({ commit }) {
       commit("SET_USER", null);

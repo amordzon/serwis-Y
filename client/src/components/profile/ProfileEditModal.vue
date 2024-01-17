@@ -64,6 +64,7 @@
 import BaseModal from "../BaseModal";
 import { mapGetters, mapActions } from "vuex";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default {
   name: "PostModal",
@@ -122,10 +123,34 @@ export default {
               ? response.data.User.description
               : "",
           });
+          Swal.fire({
+            toast: true,
+            title: "Profile updated!",
+            animation: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 1000,
+            background: "#1d9bf0",
+            color: "white",
+            timerProgressBar: false,
+            padding: "0.5em 0 0.5em",
+          });
           this.close();
         })
         .catch((error) => {
           console.log("error ", error);
+          Swal.fire({
+            toast: true,
+            title: error.response.data.message,
+            animation: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 1000,
+            background: "#1d9bf0",
+            color: "white",
+            timerProgressBar: false,
+            padding: "0.5em 0 0.5em",
+          });
         });
     },
     close() {
