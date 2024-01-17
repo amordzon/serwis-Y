@@ -49,9 +49,10 @@ import Search from "../Search";
 import Tweet from "../home/Tweet";
 import NewPost from "../home/NewPost";
 import axios from "axios";
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
 import { InfiniteScrollUpMixin } from "../../mixins/InfiniteScrollUpMixin";
+import Swal from "sweetalert2";
 
 export default {
   name: "PostDetails",
@@ -70,6 +71,7 @@ export default {
       pageComments: 1,
       pageAncestors: 1,
       ref: null,
+      newPosts: false,
     };
   },
   computed: {
@@ -81,7 +83,41 @@ export default {
       this.fetchData(postID);
     }
   },
+  beforeUnmount() {
+    this.newPosts = false;
+    Swal.update({
+      hideClass: {
+        popup: "",
+        backdrop: "",
+      },
+    });
+    Swal.close();
+    this.leaveRoom(this.post._id);
+  },
+  watch: {
+    newPosts(value) {
+      if (value == true) {
+        Swal.fire({
+          toast: true,
+          title: "Refresh to see new posts",
+          animation: true,
+          position: "bottom",
+          showConfirmButton: false,
+          background: "#1d9bf0",
+          color: "white",
+          padding: "0.5em 0 0.5em",
+        });
+      }
+    },
+  },
   methods: {
+    ...mapActions("socketio", [
+      "joinRoom",
+      "newPost",
+      "leaveRoom",
+      "subscribeToNewPost",
+    ]),
+
     async fetchData(postID) {
       try {
         await this.getPost(postID);
@@ -92,6 +128,10 @@ export default {
           this.attachInfiniteScrollUp(this.getPostAncestors);
         };
         this.scrollToElement();
+        this.joinRoom(this.post._id);
+        this.subscribeToNewPost(() => {
+          this.newPosts = true;
+        });
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -163,6 +203,7 @@ export default {
     addCommentPost(comment) {
       this.comments.unshift(comment);
       this.post.refPostCount += 1;
+      this.newPost(this.post._id);
     },
     scrollToElement() {
       if (

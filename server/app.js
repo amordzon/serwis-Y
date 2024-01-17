@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const cors = require('cors');
+const http = require('http');
+const initializeSocket = require('./sockets/socket');
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 
+const server = http.createServer(app);
+initializeSocket(server);
 const userRouter = require('./routes/user');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
@@ -60,6 +64,6 @@ mongoose
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Our server is running on port ${process.env.PORT}`);
 });
