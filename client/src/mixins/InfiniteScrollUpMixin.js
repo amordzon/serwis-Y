@@ -16,5 +16,8 @@ export const InfiniteScrollUpMixin = {
     setContentUpOver() {
       this.isContentUpOver = true;
     },
+    resetContentUpOver() {
+      this.isContentOver = false;
+    },
   },
 };

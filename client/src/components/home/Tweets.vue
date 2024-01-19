@@ -28,7 +28,6 @@ export default {
   },
   data() {
     return {
-      page: 1,
       tweetsType: "following",
     };
   },
@@ -52,7 +51,6 @@ export default {
   watch: {
     tweetsType() {
       this.clearTweets();
-      this.page = 1;
       this.getAllTweets();
     },
   },
@@ -63,22 +61,23 @@ export default {
       this.resetContentOver();
     },
     async getAllTweets() {
+      let url = `http://localhost:3000/posts?tweetsType=${this.tweetsType}`;
+      if (this.allTweets.length) {
+        url += `&createdAt=${
+          this.allTweets[this.allTweets.length - 1].createdAt
+        }`;
+      }
       await axios
-        .get(
-          `http://localhost:3000/posts?tweetsType=${this.tweetsType}&page=${this.page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+        .get(url, {
+          headers: {
+            Authorization: `Bearer ${this.jwt}`,
+          },
+        })
         .then(async (response) => {
           if (response.data.posts.length) {
             await this.fetchTweets(response.data.posts);
-            this.page++;
           } else {
             this.setContentOver();
-            console.log("dzialaj plz");
           }
         });
     },
