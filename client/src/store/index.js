@@ -3,7 +3,6 @@ import VuexPersistence from "vuex-persist";
 import user from "../modules/user.js";
 import tweet from "../modules/tweet.js";
 import postModal from "../modules/postModal.js";
-import socketio from "../modules/socketio.js";
 
 const vuexLocal = new VuexPersistence({
   storage: window.localStorage,
@@ -16,7 +15,6 @@ export default createStore({
     user,
     tweet,
     postModal,
-    socketio,
   },
   plugins: [vuexLocal.plugin],
 });
