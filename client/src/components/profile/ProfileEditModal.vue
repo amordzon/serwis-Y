@@ -93,8 +93,8 @@ export default {
     ...mapActions("user", ["editProfile"]),
     fetchData() {
       console.log("fetching", this.user.description);
-      this.previewImage = this.user.avatar.imageUrl
-        ? this.user.avatar.imageUrl
+      this.previewImage = this.user.avatar?.imageUrl
+        ? this.user.avatar?.imageUrl
         : "https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg";
       this.description = this.user.description ? this.user.description : "";
     },

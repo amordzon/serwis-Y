@@ -36,6 +36,14 @@
               >
                 Replying to @{{ tweet.refPost.user.username }}
               </div>
+              <div
+                v-else-if="
+                  tweet.refPost && tweet.refPost == 'blocked' && mode == null
+                "
+                class="text-sm font-medium text-gray-400 mb-4"
+              >
+                Replying to @[BlockedUser]
+              </div>
             </div>
           </div>
         </div>

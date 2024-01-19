@@ -28,6 +28,14 @@ export default {
         (user) => user !== userToUnfollow
       );
     },
+    SET_BLOCK_USER(state, userToBlock) {
+      state.user.blocked.unshift(userToBlock);
+    },
+    SET_UNBLOCK_USER(state, userToUnblock) {
+      state.user.blocked = state.user.blocked.filter(
+        (user) => user !== userToUnblock
+      );
+    },
     SET_AVATAR(state, avatar) {
       state.user.avatar.imageUrl = avatar;
     },
@@ -52,6 +60,12 @@ export default {
     },
     unfollowUser({ commit }, userToUnfollow) {
       commit("SET_UNFOLLOW_USER", userToUnfollow);
+    },
+    blockUser({ commit }, userToBlock) {
+      commit("SET_BLOCK_USER", userToBlock);
+    },
+    unblockUser({ commit }, userToUnblock) {
+      commit("SET_UNBLOCK_USER", userToUnblock);
     },
     editProfile({ commit }, { avatar, description }) {
       if (avatar) {

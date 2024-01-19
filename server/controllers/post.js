@@ -2,7 +2,14 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
-const aggregatePost = async (condition, sort, skipPosts, limitPosts) => {
+const aggregatePost = async (
+  usersBlocked,
+  userId,
+  condition,
+  sort,
+  skipPosts,
+  limitPosts
+) => {
   const allPosts = await Post.aggregate([
     { $match: condition },
     sort,
@@ -15,6 +22,14 @@ const aggregatePost = async (condition, sort, skipPosts, limitPosts) => {
       },
     },
     { $unwind: '$user' },
+    {
+      $match: {
+        $or: [
+          { 'user.blocked': { $nin: [userId] } },
+          { 'user.blocked': { $exists: false } },
+        ],
+      },
+    },
     {
       $lookup: {
         from: 'posts',
@@ -71,6 +86,48 @@ const aggregatePost = async (condition, sort, skipPosts, limitPosts) => {
         preserveNullAndEmptyArrays: true,
       },
     },
+    {
+      $addFields: {
+        quotedPost: {
+          $cond: {
+            if: {
+              $or: [
+                { $in: ['$quotedPost.user._id', usersBlocked] },
+                {
+                  $and: [
+                    { $ifNull: ['$quotedPost.user.blocked', false] },
+                    { $in: [userId, '$quotedPost.user.blocked'] },
+                  ],
+                },
+              ],
+            },
+            then: 'blocked',
+            else: '$quotedPost',
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        refPost: {
+          $cond: {
+            if: {
+              $or: [
+                { $in: ['$refPost.user._id', usersBlocked] },
+                {
+                  $and: [
+                    { $ifNull: ['$refPost.user.blocked', false] },
+                    { $in: [userId, '$refPost.user.blocked'] },
+                  ],
+                },
+              ],
+            },
+            then: 'blocked',
+            else: '$refPost',
+          },
+        },
+      },
+    },
     { $skip: skipPosts },
     { $limit: limitPosts },
   ]);
@@ -81,16 +138,27 @@ const getPosts = async (req, res) => {
   try {
     const postType = req.query.tweetsType;
     const pageNum = req.query.page ? req.query.page : 1;
-    let condition = {};
+    const currUser = await User.findById(req.user._id).exec();
+
+    const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
+    let condition = { user: { $nin: usersBlocked } };
+
     if (postType == 'following') {
-      const currUser = await User.findById(req.user._id).exec();
       const followingIds = currUser.following.map(
         (followedUser) => followedUser._id
       );
-      condition = { user: { $in: followingIds } };
+      condition = {
+        $and: [
+          { user: { $nin: usersBlocked } },
+          { user: { $in: followingIds } },
+        ],
+      };
     }
     const skipPosts = (pageNum - 1) * 5;
+    const currUserID = new mongoose.Types.ObjectId(req.user._id);
     const allPosts = await aggregatePost(
+      usersBlocked,
+      currUserID,
       condition,
       {
         $sort: { createdAt: -1 },
@@ -117,10 +185,27 @@ const getPosts = async (req, res) => {
 const getUsersPosts = async (req, res) => {
   try {
     const user = new mongoose.Types.ObjectId(req.params.userID);
+    const userProfile = await User.findById(user).exec();
+    const currUser = await User.findById(req.user._id).exec();
+    if (
+      userProfile.blocked.includes(req.user._id) ||
+      currUser.blocked?.includes(user)
+    ) {
+      return res.status(500).json({
+        success: false,
+        message: 'You cannot view blocked user posts!',
+        posts: [],
+      });
+    }
     const pageNum = req.query.page ? req.query.page : 1;
     const skipPosts = (pageNum - 1) * 5;
     let condition = { user: user };
+    const currUserID = new mongoose.Types.ObjectId(req.user._id);
+    const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
+
     const allUserPosts = await aggregatePost(
+      usersBlocked,
+      currUserID,
       condition,
       {
         $sort: { createdAt: -1 },
@@ -148,8 +233,14 @@ const getPost = async (req, res) => {
   try {
     const postID = req.params.postID;
     const id = new mongoose.Types.ObjectId(postID);
+    const currUser = await User.findById(req.user._id).exec();
     const condition = { _id: id };
+    const currUserID = new mongoose.Types.ObjectId(req.user._id);
+    const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
+
     const foundPost = await aggregatePost(
+      usersBlocked,
+      currUserID,
       condition,
       {
         $sort: { createdAt: -1 },
@@ -164,6 +255,13 @@ const getPost = async (req, res) => {
       });
     }
 
+    if (currUser.blocked.includes(foundPost[0].user._id)) {
+      return res.status(500).json({
+        success: true,
+        message: 'Post blocked user',
+        post: {},
+      });
+    }
     return res.status(200).json({
       success: true,
       message: 'Post info',
@@ -183,10 +281,15 @@ const getPostComments = async (req, res) => {
   try {
     const postID = req.params.postID;
     const id = new mongoose.Types.ObjectId(postID);
+    const currUser = await User.findById(req.user._id).exec();
+    const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
     const pageNum = req.query.page ? req.query.page : 1;
     const skipPosts = (pageNum - 1) * 5;
+    const currUserID = new mongoose.Types.ObjectId(req.user._id);
     const comments = await aggregatePost(
-      { refPost: id },
+      usersBlocked,
+      currUserID,
+      { $and: [{ user: { $nin: usersBlocked } }, { refPost: id }] },
       {
         $sort: { createdAt: -1 },
       },
@@ -212,7 +315,9 @@ const getPostAncestors = async (req, res) => {
   try {
     const postID = req.params.postID;
     const id = new mongoose.Types.ObjectId(postID);
-    const condition = { _id: id };
+    const currUser = await User.findById(req.user._id).exec();
+    const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
+    const condition = { $and: [{ _id: id }, { user: { $nin: usersBlocked } }] };
     const pageNum = req.query.page ? req.query.page : 1;
     const skipPosts = (pageNum - 1) * 3;
     const ancestors = await Post.aggregate([
@@ -230,9 +335,12 @@ const getPostAncestors = async (req, res) => {
     const ancestorIds = ancestors.flatMap((post) =>
       post.ancestors.map((ancestor) => ancestor._id)
     );
+    const currUserID = new mongoose.Types.ObjectId(req.user._id);
     const ancestorsInfo = await aggregatePost(
+      usersBlocked,
+      currUserID,
       {
-        _id: { $in: ancestorIds },
+        $and: [{ _id: { $in: ancestorIds } }, { user: { $nin: usersBlocked } }],
       },
       {
         $sort: { createdAt: -1 },
@@ -259,6 +367,8 @@ const getPostAncestors = async (req, res) => {
 const createPost = async (req, res) => {
   try {
     const author = req.user._id;
+    const authorProfile = await User.findById(author).exec();
+
     const quoted = req.body.quoted;
     const base = req.body.base;
 
@@ -276,20 +386,41 @@ const createPost = async (req, res) => {
 
     if (base) {
       const basePost = await Post.findById(base);
+      const basePostUser = await User.findById(basePost.user).exec();
+
       if (!basePost) {
         return res.status(404).json({
           success: false,
           message: 'Base post not found',
         });
       }
-
+      if (
+        authorProfile.blocked?.includes(basePost.author) ||
+        basePostUser.blocked?.includes(author)
+      ) {
+        return res.status(500).json({
+          success: false,
+          message: 'You cannot reply to blocked user post',
+        });
+      }
       post.refPost = basePost._id;
     } else if (quoted) {
       const quotedPost = await Post.findById(quoted);
+      const quotedPostUser = await User.findById(quotedPost.user).exec();
+
       if (!quotedPost) {
         return res.status(404).json({
           success: false,
           message: 'Quoted post not found',
+        });
+      }
+      if (
+        authorProfile.blocked?.includes(quotedPost.author) ||
+        quotedPostUser.blocked?.includes(author)
+      ) {
+        return res.status(500).json({
+          success: false,
+          message: 'You cannot quote blocked user post',
         });
       }
       post.isQuote = true;

@@ -14,7 +14,7 @@
       </div>
       <div class="mx-2">
         <h2 class="mb-0 text-xl font-bold text-white">{{ user.name }}</h2>
-        <p class="mb-0 w-48 text-xs text-gray-400">5 posts</p>
+        <p class="mb-0 w-48 text-xs text-gray-400">{{ title }}</p>
       </div>
     </div>
 
@@ -25,6 +25,6 @@
 <script>
 export default {
   name: "ProfileNavbar",
-  props: ["user"],
+  props: ["user", "title"],
 };
 </script>

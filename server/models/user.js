@@ -46,6 +46,12 @@ const UserSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    blocked: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   { timestamps: true }
 );
