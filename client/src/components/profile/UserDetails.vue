@@ -136,7 +136,6 @@ export default {
     return {
       profileUser: {},
       tweets: [],
-      page: 1,
       showProfileEditModal: false,
     };
   },
@@ -191,19 +190,20 @@ export default {
         });
     },
     async getUserPosts() {
+      let url = `http://localhost:3000/posts/user/${this.profileUser._id}`;
+
+      if (this.tweets.length) {
+        url += `?createdAt=${this.tweets[this.tweets.length - 1].createdAt}`;
+      }
       await axios
-        .get(
-          `http://localhost:3000/posts/user/${this.profileUser._id}?page=${this.page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+        .get(url, {
+          headers: {
+            Authorization: `Bearer ${this.jwt}`,
+          },
+        })
         .then((response) => {
           if (response.data.posts.length) {
             this.tweets = [...this.tweets, ...response.data.posts];
-            this.page++;
           } else {
             this.setContentOver();
           }

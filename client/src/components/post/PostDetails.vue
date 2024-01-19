@@ -76,8 +76,6 @@ export default {
       post: {},
       comments: [],
       ancestors: [],
-      pageComments: 1,
-      pageAncestors: 1,
       ref: null,
       newPosts: false,
     };
@@ -115,8 +113,6 @@ export default {
     this.post = {};
     this.comments = [];
     this.ancestors = [];
-    this.pageComments = 1;
-    this.pageAncestors = 1;
     this.ref = null;
     this.newPosts = false;
     this.fetchData(to.params.id);
@@ -138,6 +134,8 @@ export default {
       try {
         setupSocketConnection(this.jwt);
         await this.getPost(postID);
+        this.resetContentOver();
+        this.resetContentUpOver();
         window.onscroll = () => {
           this.attachInfiniteScroll(this.getPostComments);
           this.attachInfiniteScrollUp(this.getPostAncestors);
@@ -171,22 +169,22 @@ export default {
         });
     },
     async getPostComments() {
+      let url = `http://localhost:3000/posts/post/${this.post._id}/comments`;
+
+      if (this.comments.length) {
+        url += `?createdAt=${
+          this.comments[this.comments.length - 1].createdAt
+        }`;
+      }
       await axios
-        .get(
-          "http://localhost:3000/posts/post/" +
-            this.post._id +
-            "/comments?page=" +
-            this.pageComments,
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+        .get(url, {
+          headers: {
+            Authorization: `Bearer ${this.jwt}`,
+          },
+        })
         .then((response) => {
           if (response.data.comments.length) {
             this.comments = [...this.comments, ...response.data.comments];
-            this.pageComments++;
           } else {
             this.setContentOver();
           }
@@ -196,22 +194,20 @@ export default {
         });
     },
     async getPostAncestors() {
+      let url = `http://localhost:3000/posts/post/${this.post._id}/ancestors`;
+
+      if (this.ancestors.length) {
+        url += `?createdAt=${this.ancestors[0].createdAt}`;
+      }
       await axios
-        .get(
-          "http://localhost:3000/posts/post/" +
-            this.post._id +
-            "/ancestors?page=" +
-            this.pageAncestors,
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+        .get(url, {
+          headers: {
+            Authorization: `Bearer ${this.jwt}`,
+          },
+        })
         .then((response) => {
           if (response.data.ancestors.length) {
             this.ancestors = [...response.data.ancestors, ...this.ancestors];
-            this.pageAncestors++;
           } else {
             this.setContentUpOver();
           }

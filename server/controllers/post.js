@@ -7,7 +7,6 @@ const aggregatePost = async (
   userId,
   condition,
   sort,
-  skipPosts,
   limitPosts
 ) => {
   const allPosts = await Post.aggregate([
@@ -128,7 +127,6 @@ const aggregatePost = async (
         },
       },
     },
-    { $skip: skipPosts },
     { $limit: limitPosts },
   ]);
   return allPosts;
@@ -137,11 +135,21 @@ const aggregatePost = async (
 const getPosts = async (req, res) => {
   try {
     const postType = req.query.tweetsType;
-    const pageNum = req.query.page ? req.query.page : 1;
+    const targetDate = req.query.createdAt
+      ? new Date(req.query.createdAt)
+      : null;
     const currUser = await User.findById(req.user._id).exec();
 
     const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
     let condition = { user: { $nin: usersBlocked } };
+    if (targetDate && postType != 'following') {
+      condition = {
+        $and: [
+          { user: { $nin: usersBlocked } },
+          { createdAt: { $lt: targetDate } },
+        ],
+      };
+    }
 
     if (postType == 'following') {
       const followingIds = currUser.following.map(
@@ -153,8 +161,16 @@ const getPosts = async (req, res) => {
           { user: { $in: followingIds } },
         ],
       };
+      if (targetDate) {
+        condition = {
+          $and: [
+            { user: { $nin: usersBlocked } },
+            { user: { $in: followingIds } },
+            { createdAt: { $lt: targetDate } },
+          ],
+        };
+      }
     }
-    const skipPosts = (pageNum - 1) * 5;
     const currUserID = new mongoose.Types.ObjectId(req.user._id);
     const allPosts = await aggregatePost(
       usersBlocked,
@@ -163,7 +179,6 @@ const getPosts = async (req, res) => {
       {
         $sort: { createdAt: -1 },
       },
-      skipPosts,
       5
     );
 
@@ -197,9 +212,16 @@ const getUsersPosts = async (req, res) => {
         posts: [],
       });
     }
-    const pageNum = req.query.page ? req.query.page : 1;
-    const skipPosts = (pageNum - 1) * 5;
+    const targetDate = req.query.createdAt
+      ? new Date(req.query.createdAt)
+      : null;
     let condition = { user: user };
+    if (targetDate) {
+      condition = {
+        $and: [{ user: user }, { createdAt: { $lt: targetDate } }],
+      };
+    }
+
     const currUserID = new mongoose.Types.ObjectId(req.user._id);
     const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
 
@@ -210,7 +232,6 @@ const getUsersPosts = async (req, res) => {
       {
         $sort: { createdAt: -1 },
       },
-      skipPosts,
       5
     );
 
@@ -245,7 +266,6 @@ const getPost = async (req, res) => {
       {
         $sort: { createdAt: -1 },
       },
-      0,
       1
     );
     if (foundPost.length <= 0) {
@@ -283,17 +303,30 @@ const getPostComments = async (req, res) => {
     const id = new mongoose.Types.ObjectId(postID);
     const currUser = await User.findById(req.user._id).exec();
     const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
-    const pageNum = req.query.page ? req.query.page : 1;
-    const skipPosts = (pageNum - 1) * 5;
+    const targetDate = req.query.createdAt
+      ? new Date(req.query.createdAt)
+      : null;
+
+    let condition = {
+      $and: [{ user: { $nin: usersBlocked } }, { refPost: id }],
+    };
+    if (targetDate) {
+      condition = {
+        $and: [
+          { user: { $nin: usersBlocked } },
+          { refPost: id },
+          { createdAt: { $lt: targetDate } },
+        ],
+      };
+    }
     const currUserID = new mongoose.Types.ObjectId(req.user._id);
     const comments = await aggregatePost(
       usersBlocked,
       currUserID,
-      { $and: [{ user: { $nin: usersBlocked } }, { refPost: id }] },
+      condition,
       {
         $sort: { createdAt: -1 },
       },
-      skipPosts,
       5
     );
     return res.status(200).json({
@@ -318,8 +351,9 @@ const getPostAncestors = async (req, res) => {
     const currUser = await User.findById(req.user._id).exec();
     const usersBlocked = currUser.blocked.map((blockedUser) => blockedUser._id);
     const condition = { $and: [{ _id: id }, { user: { $nin: usersBlocked } }] };
-    const pageNum = req.query.page ? req.query.page : 1;
-    const skipPosts = (pageNum - 1) * 3;
+    const targetDate = req.query.createdAt
+      ? new Date(req.query.createdAt)
+      : null;
     const ancestors = await Post.aggregate([
       { $match: condition },
       {
@@ -336,16 +370,25 @@ const getPostAncestors = async (req, res) => {
       post.ancestors.map((ancestor) => ancestor._id)
     );
     const currUserID = new mongoose.Types.ObjectId(req.user._id);
+    let conditionAncestors = {
+      $and: [{ _id: { $in: ancestorIds } }, { user: { $nin: usersBlocked } }],
+    };
+    if (targetDate) {
+      conditionAncestors = {
+        $and: [
+          { _id: { $in: ancestorIds } },
+          { user: { $nin: usersBlocked } },
+          { createdAt: { $lt: targetDate } },
+        ],
+      };
+    }
     const ancestorsInfo = await aggregatePost(
       usersBlocked,
       currUserID,
-      {
-        $and: [{ _id: { $in: ancestorIds } }, { user: { $nin: usersBlocked } }],
-      },
+      conditionAncestors,
       {
         $sort: { createdAt: -1 },
       },
-      skipPosts,
       3
     );
     ancestorsInfo.reverse();
