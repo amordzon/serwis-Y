@@ -49,10 +49,18 @@ import Search from "../Search";
 import Tweet from "../home/Tweet";
 import NewPost from "../home/NewPost";
 import axios from "axios";
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters } from "vuex";
 import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
 import { InfiniteScrollUpMixin } from "../../mixins/InfiniteScrollUpMixin";
 import Swal from "sweetalert2";
+import {
+  setupSocketConnection,
+  joinRoom,
+  leaveRoom,
+  newPost,
+  disconnectSocket,
+  subscribeToNewPost,
+} from "../../services/socketio";
 
 export default {
   name: "PostDetails",
@@ -84,15 +92,7 @@ export default {
     }
   },
   beforeUnmount() {
-    this.newPosts = false;
-    Swal.update({
-      hideClass: {
-        popup: "",
-        backdrop: "",
-      },
-    });
-    Swal.close();
-    this.leaveRoom(this.post._id);
+    this.resetNotification();
   },
   watch: {
     newPosts(value) {
@@ -110,24 +110,41 @@ export default {
       }
     },
   },
+  async beforeRouteUpdate(to) {
+    await this.resetNotification();
+    this.post = {};
+    this.comments = [];
+    this.ancestors = [];
+    this.pageComments = 1;
+    this.pageAncestors = 1;
+    this.ref = null;
+    this.newPosts = false;
+    this.fetchData(to.params.id);
+  },
   methods: {
-    ...mapActions("socketio", [
-      "joinRoom",
-      "newPost",
-      "leaveRoom",
-      "subscribeToNewPost",
-    ]),
-
+    async resetNotification() {
+      this.newPosts = false;
+      Swal.update({
+        hideClass: {
+          popup: "",
+          backdrop: "",
+        },
+      });
+      Swal.close();
+      leaveRoom(this.post._id);
+      disconnectSocket();
+    },
     async fetchData(postID) {
       try {
+        setupSocketConnection(this.jwt);
         await this.getPost(postID);
         window.onscroll = () => {
           this.attachInfiniteScroll(this.getPostComments);
           this.attachInfiniteScrollUp(this.getPostAncestors);
         };
         this.scrollToElement();
-        this.joinRoom(this.post._id);
-        this.subscribeToNewPost(() => {
+        joinRoom(this.post._id);
+        subscribeToNewPost(() => {
           this.newPosts = true;
         });
       } catch (error) {
@@ -206,7 +223,7 @@ export default {
     addCommentPost(comment) {
       this.comments.unshift(comment);
       this.post.refPostCount += 1;
-      this.newPost(this.post._id);
+      newPost(this.post._id);
     },
     scrollToElement() {
       if (
