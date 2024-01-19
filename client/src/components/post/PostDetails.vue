@@ -121,8 +121,6 @@ export default {
     async fetchData(postID) {
       try {
         await this.getPost(postID);
-        await this.getPostComments();
-        await this.getPostAncestors();
         window.onscroll = () => {
           this.attachInfiniteScroll(this.getPostComments);
           this.attachInfiniteScrollUp(this.getPostAncestors);
@@ -143,8 +141,13 @@ export default {
             Authorization: `Bearer ${this.jwt}`,
           },
         })
-        .then((response) => {
-          this.post = response.data.post;
+        .then(async (response) => {
+          if (response.data.post) {
+            this.post = response.data.post;
+
+            await this.getPostComments();
+            await this.getPostAncestors();
+          }
         })
         .catch((error) => {
           console.log(error);

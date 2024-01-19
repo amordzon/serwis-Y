@@ -1,8 +1,12 @@
 <template>
   <div class="border-gray-700 border-2 mt-4 rounded-2xl">
-    <div class="p-3">
+    <div class="p-3" v-if="quotedPost != 'blocked'">
       <div class="flex flex-shrink-0">
-        <a class="flex-shrink-0 group block" target="_blank">
+        <router-link
+          :to="'/post/' + quotedPost._id"
+          class="flex-shrink-0 group block"
+          target="_blank"
+        >
           <div class="flex items-center">
             <div>
               <img
@@ -32,11 +36,39 @@
               </div>
             </div>
           </div>
-        </a>
+        </router-link>
       </div>
       <div class="pr-4 mt-2 ml-2">
         <p class="text-base width-auto font-light text-white">
           {{ quotedPost.body }}
+        </p>
+      </div>
+    </div>
+    <div class="p-3" v-else>
+      <div class="flex flex-shrink-0">
+        <a class="flex-shrink-0 group block" target="_blank">
+          <div class="flex items-center">
+            <div>
+              <img
+                class="inline-block h-8 w-8 rounded-full"
+                src="https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg"
+                alt=""
+              />
+            </div>
+            <div class="ml-3 flex flex-col">
+              <p class="text-base font-medium text-white">
+                [Blocked user]
+                <span class="text-sm font-medium text-gray-400">
+                  @[BlockedUser]
+                </span>
+              </p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="pr-4 mt-2 ml-2">
+        <p class="text-base width-auto font-light text-white">
+          [Blocked user content]
         </p>
       </div>
     </div>

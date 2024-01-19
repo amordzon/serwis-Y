@@ -33,6 +33,13 @@
         <font-awesome-icon icon="fa-regular fa-user" class="mr-4 h-6 w-6" />
         Profile
       </router-link>
+      <router-link
+        to="/profile/blocked"
+        class="mt-1 group flex items-center px-2 py-3 text-xl leading-6 rounded-full hover:bg-gray-900 cursor-pointer"
+      >
+        <font-awesome-icon icon="fa-solid fa-user-lock" class="mr-4 h-6 w-6" />
+        Blocked Users
+      </router-link>
 
       <button
         class="bg-sky-500 cursor-pointer hover:bg-sky-600 w-full mt-8 text-white font-bold py-3 px-4 rounded-full"

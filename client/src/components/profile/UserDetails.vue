@@ -1,6 +1,6 @@
 <template>
   <div v-if="profileUser._id">
-    <ProfileNavbar :user="profileUser"></ProfileNavbar>
+    <ProfileNavbar :user="profileUser" title="User details"></ProfileNavbar>
     <div>
       <div class="w-full bg-gray-800 h-48">
         <div class="opacity-0 w-full h-full"></div>
@@ -30,15 +30,30 @@
             >
               Edit profile
             </button>
-            <button
-              v-else
-              class="border bg-gray-100 border-gray-500 text-gray-900 hover:bg-gray-200 flex items-center hover:shadow-lg font-bold py-2 px-4 rounded-3xl mr-0 ml-auto"
-              @click="follow"
-            >
-              {{
-                user.following.includes(profileUser._id) ? "Unfollow" : "Follow"
-              }}
-            </button>
+            <div v-else class="flex flex-inline gap-3">
+              <button
+                class="border bg-red-600 border-red-600 text-gray-100 hover:bg-red-700 flex items-center hover:shadow-lg font-bold py-2 px-4 rounded-3xl mr-0 ml-auto"
+                @click="block"
+              >
+                {{
+                  user.blocked?.includes(profileUser._id) ? "Unblock" : "Block"
+                }}
+              </button>
+              <button
+                class="border bg-gray-100 border-gray-500 text-gray-900 hover:bg-gray-200 flex items-center hover:shadow-lg font-bold py-2 px-4 rounded-3xl mr-0 ml-auto"
+                @click="follow"
+                v-if="
+                  !user.blocked?.includes(profileUser._id) &&
+                  !profileUser.blocked.includes(user._id)
+                "
+              >
+                {{
+                  user.following.includes(profileUser._id)
+                    ? "Unfollow"
+                    : "Follow"
+                }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -82,11 +97,20 @@
       <hr class="border-gray-700" />
     </div>
     <div>
-      <Tweet v-for="tweet in tweets" :tweet="tweet" :key="tweet.id"></Tweet>
+      <div v-if="user.blocked?.includes(profileUser._id)" class="m-4">
+        You blocked this user!
+      </div>
+      <div v-else-if="profileUser.blocked.includes(user._id)" class="m-4">
+        This user blocked you!
+      </div>
+      <div>
+        <Tweet v-for="tweet in tweets" :tweet="tweet" :key="tweet.id"></Tweet>
+      </div>
     </div>
     <ProfileEditModal
       :showProfileEditModal="showProfileEditModal"
       @close-modal="closeEditUserModal"
+      v-if="user._id == profileUser._id"
     ></ProfileEditModal>
   </div>
 </template>
@@ -134,7 +158,12 @@ export default {
     window.onscroll = null;
   },
   methods: {
-    ...mapActions("user", ["followUser", "unfollowUser"]),
+    ...mapActions("user", [
+      "followUser",
+      "unfollowUser",
+      "blockUser",
+      "unblockUser",
+    ]),
 
     closeEditUserModal() {
       this.showProfileEditModal = false;
@@ -154,10 +183,7 @@ export default {
           },
         })
         .then((response) => {
-          this.profileUser =
-            response.data.user._id == this.user._id
-              ? this.user
-              : response.data.user;
+          this.profileUser = response.data.user;
           this.getUserPosts(this.profileUser._id);
         })
         .catch((error) => {
@@ -208,6 +234,43 @@ export default {
             this.profileUser.followers = this.profileUser.followers.filter(
               (u) => u !== this.user._id
             );
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async block() {
+      await axios
+        .patch(
+          "http://localhost:3000/users/block",
+          {
+            userToBlock: this.profileUser._id,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${this.jwt}`,
+            },
+          }
+        )
+        .then((response) => {
+          if (response.data.message == "Blocked user") {
+            this.blockUser(this.profileUser._id);
+            if (this.user.following.includes(this.profileUser._id)) {
+              this.unfollowUser(this.profileUser._id);
+              this.profileUser.followers = this.profileUser.followers.filter(
+                (u) => u !== this.user._id
+              );
+            }
+            if (this.profileUser.following.includes(this.user._id)) {
+              this.profileUser.following = this.profileUser.following.filter(
+                (u) => u !== this.user._id
+              );
+            }
+            this.tweets = [];
+          } else {
+            this.unblockUser(this.profileUser._id);
+            this.getUserPosts();
           }
         })
         .catch((error) => {

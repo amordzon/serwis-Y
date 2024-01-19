@@ -49,6 +49,32 @@ const getUser = async (req, res) => {
   }
 };
 
+const getBlockedUsers = async (req, res) => {
+  try {
+    const foundUser = await User.findOne({ _id: req.user._id }).populate(
+      'blocked'
+    );
+    if (!foundUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'User info',
+      user: foundUser,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err,
+    });
+  }
+};
+
 const updateUser = async (req, res) => {
   try {
     console.log(req.body);
@@ -118,6 +144,15 @@ const followUser = async (req, res) => {
     const id = req.body.userToFollow;
     const user = await User.findById(req.user._id);
     const followedUser = await User.findById(id);
+    if (
+      user.blocked.includes(id) ||
+      followedUser.blocked.includes(req.user._id)
+    ) {
+      return res.status(500).json({
+        success: false,
+        message: 'You cannot follow blocked user!',
+      });
+    }
     if (id == user._id) {
       return res.status(500).json({
         success: false,
@@ -156,4 +191,68 @@ const followUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getUser, updateUser, deleteUser, followUser };
+const blockUser = async (req, res) => {
+  try {
+    const id = req.body.userToBlock;
+    const user = await User.findById(req.user._id);
+    const userToBlock = await User.findById(id);
+
+    if (id == user._id) {
+      return res.status(500).json({
+        success: false,
+        message: 'You cannot block yourself!',
+      });
+    }
+    const isFollowingUser = user.following.includes(id);
+    if (isFollowingUser) {
+      await user.following.pull({ _id: id });
+      await user.save();
+      await userToBlock.followers.pull({ _id: user._id });
+      await userToBlock.save();
+    }
+
+    const isUserFollowed = userToBlock.following.includes(req.user._id);
+    if (isUserFollowed) {
+      await userToBlock.following.pull({ _id: id });
+      await userToBlock.save();
+      await user.followers.pull({ _id: userToBlock._id });
+      await user.save();
+    }
+
+    const found = user.blocked.includes(id);
+    if (found) {
+      await user.blocked.pull({ _id: id });
+      await user.save();
+      return res.status(200).json({
+        success: true,
+        message: 'Unblocked user',
+        user,
+      });
+    } else {
+      await user.blocked.push({ _id: id });
+      await user.save();
+      return res.status(200).json({
+        success: true,
+        message: 'Blocked user',
+        user,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err,
+    });
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+  followUser,
+  blockUser,
+  getBlockedUsers,
+};
