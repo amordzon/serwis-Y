@@ -171,7 +171,6 @@ export default {
       reader.readAsDataURL(image);
       reader.onload = (e) => {
         this.previewImage = e.target.result;
-        console.log(this.previewImage);
       };
     },
   },

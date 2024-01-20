@@ -52,6 +52,13 @@
         <div class="text-base width-auto font-light text-white">
           {{ tweet.body }}
 
+          <div v-show="tweet.image" class="w-4/5 mt-4">
+            <img
+              :src="tweet.image?.imageUrl"
+              class="inline-block rounded-lg mb-4"
+            />
+          </div>
+
           <QuotedTweet
             v-if="tweet.isQuote"
             :quotedPost="tweet.quotedPost"

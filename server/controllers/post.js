@@ -1,6 +1,7 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { uploadToCloudinary } = require('../services/cloudinary');
 
 const aggregatePost = async (
   usersBlocked,
@@ -426,6 +427,11 @@ const createPost = async (req, res) => {
       user: author,
       body: req.body.body,
     });
+
+    if (req.file) {
+      const dataFile = await uploadToCloudinary(req.file.path, 'tweet');
+      post.image = { imageUrl: dataFile.url, publicId: dataFile.public_id };
+    }
 
     if (base) {
       const basePost = await Post.findById(base);

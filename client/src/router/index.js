@@ -7,9 +7,9 @@ import BlockedUsers from "../components/profile/BlockedUsers.vue";
 import PostDetails from "../components/post/PostDetails.vue";
 
 const routes = [
-  { path: "/", component: Authentication },
-  { path: "/home", component: Home },
-  { path: "/post/:id", component: PostDetails },
+  { path: "/", component: Authentication, name: "auth" },
+  { path: "/home", component: Home, name: "home" },
+  { path: "/post/:id", component: PostDetails, name: "post" },
   {
     path: "/profile",
     component: Profile,
