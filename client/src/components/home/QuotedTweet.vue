@@ -39,9 +39,15 @@
         </router-link>
       </div>
       <div class="pr-4 mt-2 ml-2">
-        <p class="text-base width-auto font-light text-white">
+        <div class="text-base width-auto font-light text-white">
           {{ quotedPost.body }}
-        </p>
+          <div v-show="quotedPost.image" class="w-4/5 mt-4">
+            <img
+              :src="quotedPost.image?.imageUrl"
+              class="inline-block rounded-lg mb-4"
+            />
+          </div>
+        </div>
       </div>
     </div>
     <div class="p-3" v-else>

@@ -23,6 +23,9 @@
           ></textarea>
         </div>
       </div>
+      <div v-show="previewImage" class="w-4/5 ml-16 mt-4">
+        <img :src="previewImage" class="inline-block rounded-lg mb-4" />
+      </div>
 
       <div class="w-4/5 ml-16">
         <QuotedTweet
@@ -38,16 +41,23 @@
 
         <div class="px-2">
           <div class="flex-1 text-center px-1 py-1 m-2">
-            <a
-              class="mt-1 group flex items-center text-blue-400 px-2 py-2 text-base leading-6 font-medium rounded-full cursor-pointer"
-              target="_blank"
+            <label
+              class="mt-1 group cursor-pointer flex items-center text-blue-400 px-2 py-2 text-base leading-6 font-medium rounded-full cursor-pointer"
               title="Media"
+              for="fileIMG"
             >
               <font-awesome-icon
                 icon="fa-regular fa-image"
                 class="text-center h-7 w-6"
               />
-            </a>
+              <input
+                type="file"
+                id="fileIMG"
+                @change="uploadImage"
+                accept="image/png, image/jpg, image/jpeg"
+                class="hidden"
+              />
+            </label>
           </div>
         </div>
 
@@ -80,6 +90,8 @@ export default {
   data() {
     return {
       body: "",
+      previewImage: "",
+      img: "",
     };
   },
   computed: {
@@ -97,6 +109,7 @@ export default {
     async handleSubmission() {
       const reqBody = {
         body: this.body,
+        img: this.img,
       };
       if (this.quotedPost) {
         reqBody.quoted = this.quotedPost._id;
@@ -108,10 +121,10 @@ export default {
         .post("http://localhost:3000/posts", reqBody, {
           headers: {
             Authorization: `Bearer ${this.jwt}`,
+            "content-type": "multipart/form-data",
           },
         })
         .then(async (response) => {
-          console.log(response);
           this.resetForm();
           Swal.fire({
             toast: true,
@@ -145,6 +158,17 @@ export default {
     },
     resetForm() {
       this.body = "";
+      this.previewImage = "";
+      this.img = "";
+    },
+    uploadImage(e) {
+      const image = e.target.files[0];
+      this.img = image;
+      const reader = new FileReader();
+      reader.readAsDataURL(image);
+      reader.onload = (e) => {
+        this.previewImage = e.target.result;
+      };
     },
   },
 };

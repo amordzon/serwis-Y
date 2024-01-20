@@ -79,7 +79,6 @@ const updateUser = async (req, res) => {
   try {
     console.log(req.body);
     const id = req.params.userID;
-    let dataFile;
     let body = {
       description: req.body.description,
     };
@@ -88,7 +87,7 @@ const updateUser = async (req, res) => {
       if (userToUpdate.avatar.imageUrl) {
         await removeFromCloudinary(userToUpdate.avatar.publicId);
       }
-      dataFile = await uploadToCloudinary(req.file.path, 'avatar');
+      const dataFile = await uploadToCloudinary(req.file.path, 'avatar');
       body.avatar = { imageUrl: dataFile.url, publicId: dataFile.public_id };
     }
     const updatedUser = await User.findByIdAndUpdate(id, body, { new: true });

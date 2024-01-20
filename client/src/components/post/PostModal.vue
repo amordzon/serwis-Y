@@ -32,15 +32,21 @@ export default {
     ...mapState(["postModal"]),
   },
   methods: {
-    ...mapActions("tweet", ["addTweet"]),
+    ...mapActions("tweet", ["addTweet", "incrementQuotedCount"]),
     ...mapActions("postModal", ["hideModal", "setQuotedPost"]),
     close() {
       this.hideModal();
       this.setQuotedPost({});
     },
-    addPostModal(post) {
+    async addPostModal(post) {
       this.addTweet(post);
+      if (this.postModal.quotedPost._id) {
+        this.incrementQuotedCount(this.postModal.quotedPost._id);
+      }
       this.close();
+      if (this.$route.name != "home") {
+        this.$router.push("/home");
+      }
     },
   },
 };

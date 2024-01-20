@@ -12,6 +12,14 @@ const PostSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    image: {
+      imageUrl: {
+        type: String,
+      },
+      publicId: {
+        type: String,
+      },
+    },
     refPost: {
       type: mongoose.Schema.ObjectId,
       ref: 'Post',

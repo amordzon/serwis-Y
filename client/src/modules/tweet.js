@@ -19,6 +19,14 @@ export default {
     CLEAR_TWEETS(state) {
       state.allTweets = [];
     },
+    INCREMENT_QUOTED_COUNT(state, tweetID) {
+      const tweet = Object.values(state.allTweets).find(
+        (t) => t._id === tweetID
+      );
+      if (tweet) {
+        tweet.quotedPostsCount++;
+      }
+    },
   },
   actions: {
     fetchTweets({ commit }, posts) {
@@ -31,6 +39,9 @@ export default {
     },
     addTweet({ commit }, tweet) {
       commit("ADD_TWEET", tweet);
+    },
+    incrementQuotedCount({ commit }, tweetID) {
+      commit("INCREMENT_QUOTED_COUNT", tweetID);
     },
   },
 };
