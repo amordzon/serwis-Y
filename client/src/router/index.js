@@ -5,20 +5,27 @@ import Profile from "../components/profile/Profile.vue";
 import UserDetails from "../components/profile/UserDetails.vue";
 import BlockedUsers from "../components/profile/BlockedUsers.vue";
 import PostDetails from "../components/post/PostDetails.vue";
+import LayoutComponent from "../components/LayoutComponent.vue";
 
 const routes = [
-  { path: "/", component: Authentication, name: "auth" },
-  { path: "/home", component: Home, name: "home" },
-  { path: "/post/:id", component: PostDetails, name: "post" },
   {
-    path: "/profile",
-    component: Profile,
-    name: "profile",
+    path: "/",
+    component: LayoutComponent,
     children: [
-      { path: ":username", component: UserDetails },
-      { path: "blocked", component: BlockedUsers },
+      {
+        path: "profile",
+        component: Profile,
+        name: "profile",
+        children: [
+          { path: ":username", component: UserDetails },
+          { path: "blocked", component: BlockedUsers },
+        ],
+      },
+      { path: "", component: Home, name: "home" },
+      { path: "post/:id", component: PostDetails, name: "post" },
     ],
   },
+  { path: "/auth", component: Authentication, name: "auth" },
 ];
 
 const router = createRouter({

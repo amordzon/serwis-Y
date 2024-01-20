@@ -1,5 +1,5 @@
 <template>
-  <div class="border-gray-700 border-2 mt-4 rounded-2xl">
+  <div class="border-gray-700 border-2 mt-4 rounded-2xl sm:w-10/12 w-full">
     <div class="p-3" v-if="quotedPost != 'blocked'">
       <div class="flex flex-shrink-0">
         <router-link
@@ -20,7 +20,7 @@
               />
             </div>
             <div class="ml-3 flex flex-col">
-              <p class="text-base font-medium text-white">
+              <p class="text-base font-medium text-white w-11/12 sm:w-full">
                 {{ quotedPost.user.name }}
                 <span class="text-sm font-medium text-gray-400">
                   @{{ quotedPost.user.username }} ·

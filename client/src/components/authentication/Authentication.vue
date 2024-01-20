@@ -1,11 +1,11 @@
 <template>
-  <div class="flex justify-center m-4 px-4 pb-4 pt-8">
-    <div class="w-1/2 px-6 text-center">
-      <h1 class="__logo">Y</h1>
+  <div class="sm:flex justify-center sm:m-4 px-4 pb-4 sm:pt-8 pt-4">
+    <div class="sm:w-1/3 md:w-1/2 px-6 text-center sm:pt-16 md:pt-0">
+      <h1 class="sm:text-7xl md:text-9xl text-5xl __logo cursor-default">Y</h1>
     </div>
-    <div class="w-1/2 py-10 px-6">
-      <h1 class="text-6xl font-bold tracking-wide">Happening now</h1>
-      <div class="w-3/5">
+    <div class="w-10/12 sm:w-2/3 md:w-1/2 py-10 sm:px-6 mx-auto">
+      <h1 class="text-5xl font-bold tracking-wide">Happening now</h1>
+      <div class="sm:w-full md:w-3/4 xl:w-3/5">
         <p class="text-3xl font-bold mt-10 tracking-wide">Join today.</p>
         <div>
           <button
@@ -81,7 +81,7 @@ export default {
   },
   mounted() {
     if (this.isLogged) {
-      this.$router.push("/home");
+      this.$router.push("/");
     }
   },
 
@@ -141,7 +141,7 @@ export default {
               user: response.data.user.user,
               jwt: response.data.user.token,
             });
-            this.$router.push("/home");
+            this.$router.push("/");
           })
           .catch((error) => {
             console.log("error ", error);
@@ -157,7 +157,6 @@ export default {
 
 <style scoped>
 .__logo {
-  font-size: 380px;
   font-weight: 600;
 }
 </style>
