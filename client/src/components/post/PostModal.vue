@@ -45,7 +45,7 @@ export default {
       }
       this.close();
       if (this.$route.name != "home") {
-        this.$router.push("/home");
+        this.$router.push("/");
       }
     },
   },

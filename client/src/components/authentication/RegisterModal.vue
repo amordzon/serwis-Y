@@ -200,7 +200,7 @@ export default {
               user: response.data.user.user,
               jwt: response.data.user.token,
             });
-            this.$router.push("/home");
+            this.$router.push("/");
           })
           .catch((error) => {
             console.log("error ", error);

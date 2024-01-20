@@ -4,7 +4,7 @@
       <div class="flex ml-3 mt-2">
         <div class="m-2 w-12 py-1">
           <img
-            class="h-10 w-10 rounded-full"
+            class="h-8 w-8 md:h-10 md:w-10 rounded-full"
             :src="
               user.avatar?.imageUrl
                 ? user.avatar.imageUrl
@@ -13,7 +13,7 @@
             alt=""
           />
         </div>
-        <div class="px-2 pt-2 mt-2">
+        <div class="px-2 pt-2 mt-2 w-3/4 md:w-full">
           <textarea
             class="bg-transparent text-gray-400 font-normal text-xl w-full"
             rows="2"
