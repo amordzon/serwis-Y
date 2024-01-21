@@ -42,6 +42,7 @@
 <script>
 import axios from "axios";
 import BaseModal from "../BaseModal.vue";
+import { mapActions } from "vuex";
 
 export default {
   components: {
@@ -57,6 +58,8 @@ export default {
     };
   },
   methods: {
+    ...mapActions("socketio", ["setupSocketConnection"]),
+
     async handleSubmission() {
       axios
         .post("http://localhost:3000/auth/login", this.form)
@@ -67,6 +70,7 @@ export default {
             user: response.data.user.user,
             jwt: response.data.user.token,
           });
+          this.setupSocketConnection();
           this.$router.push("/");
         })
         .catch((error) => {

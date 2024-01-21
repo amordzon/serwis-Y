@@ -122,8 +122,11 @@ export default {
   methods: {
     ...mapActions("postModal", ["showModal"]),
     ...mapActions("user", ["logOut"]),
+    ...mapActions("socketio", ["disconnect"]),
+
     signOut() {
       this.logOut();
+      this.disconnect();
       this.$router.push("/auth");
     },
   },
