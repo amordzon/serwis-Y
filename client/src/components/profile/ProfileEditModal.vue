@@ -101,7 +101,7 @@ export default {
     async handleSubmission() {
       await axios
         .put(
-          "http://localhost:3000/users/" + this.user._id,
+          "http://localhost:3000/users/",
           {
             img: this.img,
             description: this.description,
@@ -159,7 +159,7 @@ export default {
     },
     clearData() {
       this.img = "";
-      this.previewImage = this.user.avatar.imageUrl
+      this.previewImage = this.user.avatar?.imageUrl
         ? this.user.avatar.imageUrl
         : "https://kis.agh.edu.pl/wp-content/uploads/2021/01/default-avatar-300x300.jpg";
       this.description = this.user.description ? this.user.description : "";

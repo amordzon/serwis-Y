@@ -78,7 +78,7 @@ const getBlockedUsers = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     console.log(req.body);
-    const id = req.params.userID;
+    const id = req.user._id;
     let body = {
       description: req.body.description,
     };
@@ -101,32 +101,6 @@ const updateUser = async (req, res) => {
       success: true,
       message: 'User is updated',
       User: updatedUser,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: err,
-    });
-  }
-};
-
-const deleteUser = async (req, res) => {
-  try {
-    const id = req.params.userID;
-    const deletedUser = await User.findByIdAndDelete(id);
-
-    if (!deletedUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: 'User deleted successfully',
     });
   } catch (err) {
     console.log(err);
@@ -250,7 +224,6 @@ module.exports = {
   getAllUsers,
   getUser,
   updateUser,
-  deleteUser,
   followUser,
   blockUser,
   getBlockedUsers,

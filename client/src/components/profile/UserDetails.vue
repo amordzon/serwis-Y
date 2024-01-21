@@ -156,6 +156,10 @@ export default {
   beforeUnmount() {
     window.onscroll = null;
   },
+  async beforeRouteUpdate(to) {
+    this.resetUserDetails();
+    this.fetchData(to.params.username);
+  },
   methods: {
     ...mapActions("user", [
       "followUser",
@@ -164,8 +168,15 @@ export default {
       "unblockUser",
     ]),
 
+    resetUserDetails() {
+      this.profileUser = {};
+      this.tweets = [];
+      this.showProfileEditModal = false;
+    },
     closeEditUserModal() {
       this.showProfileEditModal = false;
+      this.resetUserDetails();
+      this.getUserDetails(this.$route.params.username);
     },
     async fetchData(username) {
       await this.getUserDetails(username);
