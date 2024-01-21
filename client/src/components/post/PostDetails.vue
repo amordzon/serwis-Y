@@ -41,18 +41,10 @@
 import Tweet from "../home/Tweet";
 import NewPost from "../home/NewPost";
 import axios from "axios";
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
 import { InfiniteScrollUpMixin } from "../../mixins/InfiniteScrollUpMixin";
 import Swal from "sweetalert2";
-import {
-  setupSocketConnection,
-  joinRoom,
-  leaveRoom,
-  newPost,
-  disconnectSocket,
-  subscribeToNewPost,
-} from "../../services/socketio";
 
 export default {
   name: "PostDetails",
@@ -108,6 +100,13 @@ export default {
     this.fetchData(to.params.id);
   },
   methods: {
+    ...mapActions("socketio", [
+      "joinRoom",
+      "newPost",
+      "leaveRoom",
+      "subscribeToNewPost",
+    ]),
+
     async resetNotification() {
       this.newPosts = false;
       Swal.update({
@@ -117,12 +116,10 @@ export default {
         },
       });
       Swal.close();
-      leaveRoom(this.post._id);
-      disconnectSocket();
+      this.leaveRoom(this.post._id);
     },
     async fetchData(postID) {
       try {
-        setupSocketConnection(this.jwt);
         await this.getPost(postID);
         this.resetContentOver();
         this.resetContentUpOver();
@@ -131,8 +128,8 @@ export default {
           this.attachInfiniteScrollUp(this.getPostAncestors);
         };
         this.scrollToElement();
-        joinRoom(this.post._id);
-        subscribeToNewPost(() => {
+        this.joinRoom(this.post._id);
+        this.subscribeToNewPost(() => {
           this.newPosts = true;
         });
       } catch (error) {
@@ -209,7 +206,7 @@ export default {
     addCommentPost(comment) {
       this.comments.unshift(comment);
       this.post.refPostCount += 1;
-      newPost(this.post._id);
+      this.newPost(this.post._id);
     },
     scrollToElement() {
       if (
