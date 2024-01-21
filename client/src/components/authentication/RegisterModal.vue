@@ -82,6 +82,7 @@
 <script>
 import BaseModal from "../BaseModal.vue";
 import axios from "axios";
+import { mapActions } from "vuex";
 
 export default {
   components: {
@@ -141,6 +142,8 @@ export default {
   },
 
   methods: {
+    ...mapActions("socketio", ["setupSocketConnection"]),
+
     validateName(value) {
       if (value.length < 2 || value.length > 40) {
         this.errors.name = "Name must be 2-40 characters";
@@ -200,6 +203,7 @@ export default {
               user: response.data.user.user,
               jwt: response.data.user.token,
             });
+            this.setupSocketConnection();
             this.$router.push("/");
           })
           .catch((error) => {
