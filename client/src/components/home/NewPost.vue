@@ -75,11 +75,11 @@
 </template>
 
 <script>
-import axios from "axios";
 import { mapGetters } from "vuex";
-import Swal from "sweetalert2";
+import { showNotification } from "../../utils/Notifications";
 import QuotedTweet from "../home/QuotedTweet";
 import moment from "moment";
+import PostService from "../../services/PostService";
 
 export default {
   name: "NewPost",
@@ -117,43 +117,17 @@ export default {
       if (this.refPost) {
         reqBody.base = this.refPost;
       }
-      axios
-        .post("http://localhost:3000/posts", reqBody, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-            "content-type": "multipart/form-data",
-          },
-        })
+
+      await PostService.postSubmission(reqBody, this.jwt)
         .then(async (response) => {
           this.resetForm();
-          Swal.fire({
-            toast: true,
-            title: "New post created!",
-            animation: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 1000,
-            background: "#1d9bf0",
-            color: "white",
-            timerProgressBar: false,
-            padding: "0.5em 0 0.5em",
-          });
+          showNotification({ title: "New post created!" });
           this.$emit("add-post", response.data.Post);
         })
         .catch((error) => {
           console.log("error ", error);
-          Swal.fire({
-            toast: true,
-            title: error.response.data.message,
-            animation: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 1000,
-            background: "#1d9bf0",
-            color: "white",
-            timerProgressBar: false,
-            padding: "0.5em 0 0.5em",
-          });
+
+          showNotification({ title: error.response?.data.message });
         });
     },
     resetForm() {

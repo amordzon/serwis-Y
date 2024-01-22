@@ -81,8 +81,8 @@
 
 <script>
 import BaseModal from "../BaseModal.vue";
-import axios from "axios";
 import { mapActions } from "vuex";
+import AuthService from "../../services/AuthService";
 
 export default {
   components: {
@@ -194,10 +194,8 @@ export default {
         (error) => error === ""
       );
       if (noErrors) {
-        axios
-          .post("http://localhost:3000/auth/register", this.form)
+        await AuthService.RegisterSubmisssion(this.form)
           .then(async (response) => {
-            console.log(response);
             this.resetAndClose();
             await this.$store.dispatch("user/logIn", {
               user: response.data.user.user,
@@ -207,7 +205,6 @@ export default {
             this.$router.push("/");
           })
           .catch((error) => {
-            console.log("error ", error);
             console.log(error);
 
             this.$emit("emit-error", error);

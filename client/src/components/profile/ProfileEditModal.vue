@@ -63,8 +63,8 @@
 <script>
 import BaseModal from "../BaseModal";
 import { mapGetters, mapActions } from "vuex";
-import axios from "axios";
-import Swal from "sweetalert2";
+import { showNotification } from "../../utils/Notifications";
+import UserService from "../../services/UserService";
 
 export default {
   name: "PostModal",
@@ -99,58 +99,27 @@ export default {
       this.description = this.user.description ? this.user.description : "";
     },
     async handleSubmission() {
-      await axios
-        .put(
-          "http://localhost:3000/users/",
-          {
-            img: this.img,
-            description: this.description,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-              "content-type": "multipart/form-data",
-            },
-          }
-        )
+      await UserService.editUserDetails(
+        {
+          img: this.img,
+          description: this.description,
+        },
+        this.jwt
+      )
         .then(async (response) => {
           console.log(response);
           this.editProfile({
             avatar: response.data.User.avatar?.imageUrl
               ? response.data.User.avatar.imageUrl
               : "",
-            description: response.data.User.description
-              ? response.data.User.description
-              : "",
           });
-          Swal.fire({
-            toast: true,
-            title: "Profile updated!",
-            animation: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 1000,
-            background: "#1d9bf0",
-            color: "white",
-            timerProgressBar: false,
-            padding: "0.5em 0 0.5em",
-          });
+          showNotification({ title: "Profile updated!" });
+
           this.close();
         })
         .catch((error) => {
           console.log("error ", error);
-          Swal.fire({
-            toast: true,
-            title: error.response.data.message,
-            animation: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 1000,
-            background: "#1d9bf0",
-            color: "white",
-            timerProgressBar: false,
-            padding: "0.5em 0 0.5em",
-          });
+          showNotification({ title: error.response?.data.message });
         });
     },
     close() {

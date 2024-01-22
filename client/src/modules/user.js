@@ -20,14 +20,6 @@ export default {
     SET_IS_LOGGED(state, isLogged) {
       state.isLogged = isLogged;
     },
-    SET_FOLLOW_USER(state, userToFollow) {
-      state.user.following.unshift(userToFollow);
-    },
-    SET_UNFOLLOW_USER(state, userToUnfollow) {
-      state.user.following = state.user.following.filter(
-        (user) => user !== userToUnfollow
-      );
-    },
     SET_BLOCK_USER(state, userToBlock) {
       state.user.blocked.unshift(userToBlock);
     },
@@ -38,9 +30,6 @@ export default {
     },
     SET_AVATAR(state, avatar) {
       state.user.avatar.imageUrl = avatar;
-    },
-    SET_DESCRIPTION(state, description) {
-      state.user.description = description;
     },
   },
   actions: {
@@ -54,23 +43,16 @@ export default {
       commit("SET_JWT", "");
       commit("SET_IS_LOGGED", false);
     },
-    followUser({ commit }, userToFollow) {
-      commit("SET_FOLLOW_USER", userToFollow);
-    },
-    unfollowUser({ commit }, userToUnfollow) {
-      commit("SET_UNFOLLOW_USER", userToUnfollow);
-    },
     blockUser({ commit }, userToBlock) {
       commit("SET_BLOCK_USER", userToBlock);
     },
     unblockUser({ commit }, userToUnblock) {
       commit("SET_UNBLOCK_USER", userToUnblock);
     },
-    editProfile({ commit }, { avatar, description }) {
+    editProfile({ commit }, { avatar }) {
       if (avatar) {
         commit("SET_AVATAR", avatar);
       }
-      commit("SET_DESCRIPTION", description);
     },
   },
 };

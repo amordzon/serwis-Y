@@ -62,10 +62,9 @@
 <script>
 import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
-import { googleSdkLoaded } from "vue3-google-login";
-import axios from "axios";
-import Swal from "sweetalert2";
+import { showNotification } from "../../utils/Notifications";
 import { mapGetters } from "vuex";
+import AuthService from "../../services/AuthService";
 
 export default {
   name: "AuthenticationPage",
@@ -97,46 +96,25 @@ export default {
     },
 
     emitError(error) {
-      Swal.fire({
-        toast: true,
-        title: error.response.data.message,
-        animation: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 1000,
-        background: "#1d9bf0",
-        color: "white",
-        timerProgressBar: false,
-        padding: "0.5em 0 0.5em",
+      showNotification({
+        title: error.response?.data.message,
       });
     },
 
     googleAuth() {
-      googleSdkLoaded((google) => {
-        google.accounts.oauth2
-          .initCodeClient({
-            client_id: process.env.VUE_APP_CLIENT_ID,
-            scope: "email profile openid",
-            redirect_uri: process.env.VUE_APP_REDIRECT_URL,
-            callback: (response) => {
-              if (response.code) {
-                this.sendCodeToBackend(response.code);
-              }
-            },
-          })
-          .requestCode();
+      const clientId = process.env.VUE_APP_CLIENT_ID;
+      const redirectUrl = process.env.VUE_APP_REDIRECT_URL;
+
+      AuthService.initGoogleAuth(clientId, redirectUrl, (response) => {
+        if (response.code) {
+          this.sendCodeToBackend(response.code);
+        }
       });
     },
     async sendCodeToBackend(code) {
       try {
-        const headers = {
-          Authorization: code,
-        };
-        await axios
-          .get("http://localhost:3000/auth/google", { headers })
+        await AuthService.sendGoogleCodeToBackend(code)
           .then(async (response) => {
-            const userDetails = response.data;
-            console.log("User Details:", userDetails);
             await this.$store.dispatch("user/logIn", {
               user: response.data.user.user,
               jwt: response.data.user.token,
@@ -149,6 +127,7 @@ export default {
           });
       } catch (error) {
         console.error("Failed to send authorization code:", error);
+        this.emitError(error);
       }
     },
   },

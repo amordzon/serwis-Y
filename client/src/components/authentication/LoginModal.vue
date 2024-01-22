@@ -40,9 +40,9 @@
 </template>
 
 <script>
-import axios from "axios";
 import BaseModal from "../BaseModal.vue";
 import { mapActions } from "vuex";
+import AuthService from "../../services/AuthService";
 
 export default {
   components: {
@@ -61,10 +61,8 @@ export default {
     ...mapActions("socketio", ["setupSocketConnection"]),
 
     async handleSubmission() {
-      axios
-        .post("http://localhost:3000/auth/login", this.form)
+      await AuthService.LoginSubmission(this.form)
         .then(async (response) => {
-          console.log(response);
           this.resetAndClose();
           await this.$store.dispatch("user/logIn", {
             user: response.data.user.user,

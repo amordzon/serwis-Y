@@ -45,8 +45,8 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import axios from "axios";
 import ProfileNavbar from "./ProfileNavbar";
+import UserService from "../../services/UserService";
 
 export default {
   name: "BlockedUsers",
@@ -70,33 +70,16 @@ export default {
   methods: {
     ...mapActions("user", ["unblockUser"]),
     async getBlockedUsers() {
-      await axios
-        .get("http://localhost:3000/users/blocked/", {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
+      await UserService.getOurBlockedUsers(this.jwt)
         .then((response) => {
           this.profileUser = response.data.user;
-          console.log(this.profileUser._id);
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async unblock(userID) {
-      await axios
-        .patch(
-          "http://localhost:3000/users/block",
-          {
-            userToBlock: userID,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+      await UserService.blockUnblock(userID, this.jwt)
         .then((response) => {
           if (response.data.message == "Unblocked user") {
             this.unblockUser(userID);
