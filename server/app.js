@@ -4,8 +4,9 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const cors = require('cors');
-const http = require('http');
+const https = require('https');
 const initializeSocket = require('./sockets/socket');
+const fs = require('fs');
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ require('./auth/passportAuth')(passport);
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:8080'];
+const allowedOrigins = ['http://localhost:8080', 'https://localhost:8080'];
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -33,7 +34,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 
-const server = http.createServer(app);
+const privateKey = fs.readFileSync('../certs/example.com+5-key.pem', 'utf8');
+const certificate = fs.readFileSync('../certs/example.com+5.pem', 'utf8');
+
+const server = https.createServer(
+  {
+    key: privateKey,
+    cert: certificate,
+  },
+  app
+);
 initializeSocket(server);
 const userRouter = require('./routes/user');
 const authRouter = require('./routes/auth');
