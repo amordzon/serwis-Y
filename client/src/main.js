@@ -37,7 +37,7 @@ library.add(
   faUserLock
 );
 
-axios.defaults.baseURL = "http://localhost:3000";
+axios.defaults.baseURL = "https://localhost:3000";
 
 createApp(App)
   .component("font-awesome-icon", FontAwesomeIcon)
