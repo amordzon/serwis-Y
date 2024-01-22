@@ -186,7 +186,7 @@ const blockUser = async (req, res) => {
 
     const isUserFollowed = userToBlock.following.includes(req.user._id);
     if (isUserFollowed) {
-      await userToBlock.following.pull({ _id: id });
+      await userToBlock.following.pull({ _id: req.user._id });
       await userToBlock.save();
       await user.followers.pull({ _id: userToBlock._id });
       await user.save();

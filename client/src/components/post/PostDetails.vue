@@ -40,11 +40,11 @@
 <script>
 import Tweet from "../home/Tweet";
 import NewPost from "../home/NewPost";
-import axios from "axios";
 import { mapGetters, mapActions } from "vuex";
 import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
 import { InfiniteScrollUpMixin } from "../../mixins/InfiniteScrollUpMixin";
 import Swal from "sweetalert2";
+import PostService from "../../services/PostService";
 
 export default {
   name: "PostDetails",
@@ -137,16 +137,10 @@ export default {
       }
     },
     async getPost(postID) {
-      await axios
-        .get("http://localhost:3000/posts/post/" + postID, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
+      await PostService.getPost(postID, this.jwt)
         .then(async (response) => {
           if (response.data.post) {
             this.post = response.data.post;
-
             await this.getPostComments();
             await this.getPostAncestors();
           }
@@ -156,19 +150,15 @@ export default {
         });
     },
     async getPostComments() {
-      let url = `http://localhost:3000/posts/post/${this.post._id}/comments`;
+      let url = `/posts/post/${this.post._id}/comments`;
 
       if (this.comments.length) {
         url += `?createdAt=${
           this.comments[this.comments.length - 1].createdAt
         }`;
       }
-      await axios
-        .get(url, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
+
+      await PostService.getPostComm(url, this.jwt)
         .then((response) => {
           if (response.data.comments.length) {
             this.comments = [...this.comments, ...response.data.comments];
@@ -181,17 +171,13 @@ export default {
         });
     },
     async getPostAncestors() {
-      let url = `http://localhost:3000/posts/post/${this.post._id}/ancestors`;
+      let url = `/posts/post/${this.post._id}/ancestors`;
 
       if (this.ancestors.length) {
         url += `?createdAt=${this.ancestors[0].createdAt}`;
       }
-      await axios
-        .get(url, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
+
+      await PostService.getPostAncestors(url, this.jwt)
         .then((response) => {
           if (response.data.ancestors.length) {
             this.ancestors = [...response.data.ancestors, ...this.ancestors];

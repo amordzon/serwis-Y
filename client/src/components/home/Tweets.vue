@@ -7,7 +7,10 @@
     <NewPost @add-post="addPost"></NewPost>
 
     <hr class="border-gray-700" />
-    <Tweet v-for="tweet in allTweets" :tweet="tweet" :key="tweet.id"></Tweet>
+    <div v-if="allTweets.length">
+      <Tweet v-for="tweet in allTweets" :tweet="tweet" :key="tweet.id"></Tweet>
+    </div>
+    <div v-else class="p-4">There is no tweets!</div>
   </div>
 </template>
 
@@ -17,7 +20,7 @@ import TweetsType from "./TweetsType";
 import NewPost from "./NewPost";
 import { mapGetters, mapActions } from "vuex";
 import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
-import axios from "axios";
+import PostService from "../../services/PostService";
 
 export default {
   name: "TweetsComponent",
@@ -61,25 +64,20 @@ export default {
       this.resetContentOver();
     },
     async getAllTweets() {
-      let url = `http://localhost:3000/posts?tweetsType=${this.tweetsType}`;
+      let url = `/posts?tweetsType=${this.tweetsType}`;
       if (this.allTweets.length) {
         url += `&createdAt=${
           this.allTweets[this.allTweets.length - 1].createdAt
         }`;
       }
-      await axios
-        .get(url, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
-        .then(async (response) => {
-          if (response.data.posts.length) {
-            await this.fetchTweets(response.data.posts);
-          } else {
-            this.setContentOver();
-          }
-        });
+
+      await PostService.getPosts(url, this.jwt).then(async (response) => {
+        if (response.data.posts.length) {
+          await this.fetchTweets(response.data.posts);
+        } else {
+          this.setContentOver();
+        }
+      });
     },
     addPost(post) {
       this.addTweet(post);

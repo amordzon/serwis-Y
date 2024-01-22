@@ -21,6 +21,7 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import axios from "axios";
 
 library.add(
   faHouse,
@@ -35,6 +36,8 @@ library.add(
   faRightFromBracket,
   faUserLock
 );
+
+axios.defaults.baseURL = "http://localhost:3000";
 
 createApp(App)
   .component("font-awesome-icon", FontAwesomeIcon)

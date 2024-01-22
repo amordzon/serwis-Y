@@ -48,7 +48,7 @@
                 "
               >
                 {{
-                  user.following.includes(profileUser._id)
+                  profileUser.followers.includes(user._id)
                     ? "Unfollow"
                     : "Follow"
                 }}
@@ -103,7 +103,7 @@
       <div v-else-if="profileUser.blocked.includes(user._id)" class="m-4">
         This user blocked you!
       </div>
-      <div>
+      <div v-else>
         <Tweet v-for="tweet in tweets" :tweet="tweet" :key="tweet.id"></Tweet>
       </div>
     </div>
@@ -117,12 +117,12 @@
 
 <script>
 import ProfileNavbar from "./ProfileNavbar";
-import axios from "axios";
 import moment from "moment";
 import { mapGetters, mapActions } from "vuex";
 import Tweet from "../home/Tweet";
 import { InfiniteScrollDownMixin } from "../../mixins/InfiniteScrollDownMixin";
 import ProfileEditModal from "./ProfileEditModal";
+import UserService from "../../services/UserService";
 
 export default {
   name: "UserDetails",
@@ -161,12 +161,7 @@ export default {
     this.fetchData(to.params.username);
   },
   methods: {
-    ...mapActions("user", [
-      "followUser",
-      "unfollowUser",
-      "blockUser",
-      "unblockUser",
-    ]),
+    ...mapActions("user", ["blockUser", "unblockUser"]),
 
     resetUserDetails() {
       this.profileUser = {};
@@ -186,32 +181,23 @@ export default {
       };
     },
     async getUserDetails(username) {
-      await axios
-        .get("http://localhost:3000/users/user/" + username, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
+      await UserService.getUserInfo(username, this.jwt)
         .then((response) => {
           this.profileUser = response.data.user;
-          this.getUserPosts(this.profileUser._id);
+          this.getUserPosts(response.data.user._id);
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async getUserPosts() {
-      let url = `http://localhost:3000/posts/user/${this.profileUser._id}`;
+      let url = `/posts/user/${this.profileUser._id}`;
 
       if (this.tweets.length) {
         url += `?createdAt=${this.tweets[this.tweets.length - 1].createdAt}`;
       }
-      await axios
-        .get(url, {
-          headers: {
-            Authorization: `Bearer ${this.jwt}`,
-          },
-        })
+
+      await UserService.getUserTweets(url, this.jwt)
         .then((response) => {
           if (response.data.posts.length) {
             this.tweets = [...this.tweets, ...response.data.posts];
@@ -224,24 +210,11 @@ export default {
         });
     },
     async follow() {
-      await axios
-        .patch(
-          "http://localhost:3000/users/follow",
-          {
-            userToFollow: this.profileUser._id,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+      await UserService.followUnfollow(this.profileUser._id, this.jwt)
         .then((response) => {
           if (response.data.message == "Followed user") {
-            this.followUser(this.profileUser._id);
             this.profileUser.followers.unshift(this.user._id);
           } else {
-            this.unfollowUser(this.profileUser._id);
             this.profileUser.followers = this.profileUser.followers.filter(
               (u) => u !== this.user._id
             );
@@ -252,23 +225,12 @@ export default {
         });
     },
     async block() {
-      await axios
-        .patch(
-          "http://localhost:3000/users/block",
-          {
-            userToBlock: this.profileUser._id,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${this.jwt}`,
-            },
-          }
-        )
+      await UserService.blockUnblock(this.profileUser._id, this.jwt)
         .then((response) => {
           if (response.data.message == "Blocked user") {
             this.blockUser(this.profileUser._id);
-            if (this.user.following.includes(this.profileUser._id)) {
-              this.unfollowUser(this.profileUser._id);
+            if (this.profileUser.followers.includes(this.user._id)) {
+              console.log("odfollowuj");
               this.profileUser.followers = this.profileUser.followers.filter(
                 (u) => u !== this.user._id
               );
