@@ -58,12 +58,14 @@
               class="inline-block rounded-lg mb-4"
             />
           </div>
-
-          <QuotedTweet
-            v-if="tweet.isQuote"
-            :quotedPost="tweet.quotedPost"
-            :createdDateWithArg="createdDateWithArg"
-          ></QuotedTweet>
+          <div v-if="tweet.isQuote">
+            <router-link :to="'/post/' + tweet.quotedPost._id">
+              <QuotedTweet
+                :quotedPost="tweet.quotedPost"
+                :createdDateWithArg="createdDateWithArg"
+              ></QuotedTweet>
+            </router-link>
+          </div>
         </div>
 
         <div class="flex">
