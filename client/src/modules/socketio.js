@@ -23,6 +23,12 @@ export default {
     NEW_POST(state, postID) {
       state.socket.emit("newpost", postID);
     },
+    JOIN_FOLLOWING_ROOM(state, userID) {
+      state.socket.emit("subscribeFollowing", userID);
+    },
+    LEAVE_FOLLOWING_ROOM(state, userID) {
+      state.socket.emit("unsubscribeFollowing", userID);
+    },
   },
 
   actions: {
@@ -57,9 +63,28 @@ export default {
         commit("DISCONNECT_SOCKET");
       }
     },
+    joinFollowingRoom({ state, commit, dispatch }, userID) {
+      if (!state.socket) {
+        dispatch("setupSocketConnection");
+      }
+      commit("JOIN_FOLLOWING_ROOM", userID);
+    },
+    leaveFollowingRoom({ state, commit, dispatch }, userID) {
+      if (!state.socket) {
+        dispatch("setupSocketConnection");
+      }
+      commit("LEAVE_FOLLOWING_ROOM", userID);
+    },
     subscribeToNewPost({ state }, cb) {
       if (state.socket) {
         state.socket.on("newpost", () => {
+          cb();
+        });
+      }
+    },
+    subscribeToNewFollowingPost({ state }, cb) {
+      if (state.socket) {
+        state.socket.on("newFollowingPost", () => {
           cb();
         });
       }

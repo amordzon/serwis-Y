@@ -2,6 +2,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const { uploadToCloudinary } = require('../services/cloudinary');
+//const { io } = require('../sockets/socket');
 
 const aggregatePost = async (
   usersBlocked,
@@ -492,6 +493,12 @@ const createPost = async (req, res) => {
         },
       })
       .exec();
+
+    authorProfile.followers.forEach((userId) => {
+      console.log('nowy post follow', userId.toString());
+      io.to(`user-${userId.toString()}`).emit('newFollowingPost');
+    });
+
     return res.status(201).json({
       success: true,
       message: 'New post created successfully',
