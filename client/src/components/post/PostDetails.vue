@@ -27,6 +27,18 @@
       <hr class="border-gray-700" />
       <NewPost :refPost="post._id" @add-post="addCommentPost"></NewPost>
       <hr class="border-gray-700" />
+      <div v-if="newPosts">
+        <div class="p-4 text-center">
+          <div
+            class="hover:underline hover:cursor-pointer"
+            @click="resetComments"
+          >
+            Click here to load new comments
+          </div>
+        </div>
+
+        <hr class="border-gray-700" />
+      </div>
       <Tweet
         v-for="tweet in comments"
         :tweet="tweet"
@@ -107,6 +119,11 @@ export default {
       "subscribeToNewPost",
     ]),
 
+    async resetComments() {
+      await this.resetNotification();
+      this.comments = [];
+      this.getPostComments();
+    },
     async resetNotification() {
       this.newPosts = false;
       Swal.update({
