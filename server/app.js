@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const cors = require('cors');
 const https = require('https');
-const initializeSocket = require('./sockets/socket');
+const socketInitializer = require('./sockets/socket');
 const fs = require('fs');
 
 dotenv.config();
@@ -44,7 +44,8 @@ const server = https.createServer(
   },
   app
 );
-initializeSocket(server);
+
+global.io = socketInitializer.initializeSocket(server);
 const userRouter = require('./routes/user');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');

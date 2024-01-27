@@ -20,6 +20,8 @@ const initializeSocket = (server) => {
   io.on('connection', (socket) => {
     console.log('Connected');
 
+    //POST
+
     socket.on('join', (roomName) => {
       console.log('join: ' + roomName);
       socket.join(roomName);
@@ -35,6 +37,18 @@ const initializeSocket = (server) => {
       socket.to(roomName).emit('newpost');
     });
 
+    //FOLLOWING
+
+    socket.on('subscribeFollowing', (userId) => {
+      console.log('subscribed');
+      socket.join(`user-${userId}`);
+    });
+
+    socket.on('unsubscribeFollowing', (userId) => {
+      console.log('unsubscribed');
+      socket.leave(`user-${userId}`);
+    });
+
     socket.on('disconnect', () => {
       console.log('Disconnected');
     });
@@ -43,4 +57,4 @@ const initializeSocket = (server) => {
   return io;
 };
 
-module.exports = initializeSocket;
+module.exports = { initializeSocket };

@@ -79,7 +79,7 @@ export default {
       if (value == true) {
         Swal.fire({
           toast: true,
-          title: "Refresh to see new posts",
+          title: "There are new posts!",
           animation: true,
           position: "bottom",
           showConfirmButton: false,
