@@ -48,6 +48,25 @@ const UserSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    allFollowing: [
+      {
+        user: {
+          type: mongoose.Schema.ObjectId,
+          ref: 'User',
+        },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+        startedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        endedAt: {
+          type: Date,
+        },
+      },
+    ],
     blocked: [
       {
         type: mongoose.Schema.ObjectId,

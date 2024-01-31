@@ -2,7 +2,6 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const { uploadToCloudinary } = require('../services/cloudinary');
-//const { io } = require('../sockets/socket');
 
 const aggregatePost = async (
   usersBlocked,
@@ -154,23 +153,28 @@ const getPosts = async (req, res) => {
     }
 
     if (postType == 'following') {
-      const followingIds = currUser.following.map(
-        (followedUser) => followedUser._id
-      );
+      const followingEntries = currUser.allFollowing;
       condition = {
         $and: [
           { user: { $nin: usersBlocked } },
-          { user: { $in: followingIds } },
+          {
+            $or: followingEntries.map((entry) => ({
+              $and: [
+                { user: entry.user },
+                {
+                  $and: [
+                    { createdAt: { $gte: entry.startedAt } },
+                    { createdAt: { $lte: entry.endedAt || new Date() } },
+                  ],
+                },
+              ],
+            })),
+          },
         ],
       };
+
       if (targetDate) {
-        condition = {
-          $and: [
-            { user: { $nin: usersBlocked } },
-            { user: { $in: followingIds } },
-            { createdAt: { $lt: targetDate } },
-          ],
-        };
+        condition.$and.push({ createdAt: { $lt: targetDate } });
       }
     }
     const currUserID = new mongoose.Types.ObjectId(req.user._id);

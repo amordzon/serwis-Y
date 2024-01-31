@@ -7,19 +7,16 @@
     <NewPost @add-post="addPost"></NewPost>
 
     <hr class="border-gray-700" />
-    <div v-if="allTweets.length">
-      <div v-if="newFollowingPosts && tweetsType == 'following'">
-        <div class="p-4 text-center">
-          <div
-            class="hover:underline hover:cursor-pointer"
-            @click="resetTweets"
-          >
-            Click here to load new posts
-          </div>
+    <div v-if="newFollowingPosts && tweetsType == 'following'">
+      <div class="p-4 text-center">
+        <div class="hover:underline hover:cursor-pointer" @click="resetTweets">
+          Click here to load new posts
         </div>
-
-        <hr class="border-gray-700" />
       </div>
+
+      <hr class="border-gray-700" />
+    </div>
+    <div v-if="allTweets.length">
       <Tweet v-for="tweet in allTweets" :tweet="tweet" :key="tweet.id"></Tweet>
     </div>
     <div v-else class="p-4">There is no tweets!</div>
@@ -55,15 +52,16 @@ export default {
   },
   mounted() {
     if (this.jwt) {
-      this.getAllTweets();
+      this.getAllTweets(false);
       window.onscroll = () => {
-        this.attachInfiniteScroll(this.getAllTweets);
+        this.attachInfiniteScroll(() => this.getAllTweets(true));
       };
     }
   },
   beforeUnmount() {
     window.onscroll = null;
     this.clearTweets();
+    this.resetNotification();
   },
   watch: {
     tweetsType(value) {
@@ -97,7 +95,7 @@ export default {
 
     resetTweets() {
       this.clearTweets();
-      this.getAllTweets();
+      this.getAllTweets(false);
       this.resetNotification();
     },
     resetNotification() {
@@ -114,7 +112,7 @@ export default {
       this.tweetsType = type;
       this.resetContentOver();
     },
-    async getAllTweets() {
+    async getAllTweets(isScroll) {
       if (this.tweetsType == "following") {
         this.joinFollowingRoom(this.user._id);
         this.subscribeToNewFollowingPost(() => {
@@ -122,12 +120,14 @@ export default {
         });
       }
       let url = `/posts?tweetsType=${this.tweetsType}`;
-      if (this.allTweets.length) {
+      if (!this.allTweets.length && isScroll) {
+        return;
+      }
+      if (this.allTweets.length && isScroll) {
         url += `&createdAt=${
           this.allTweets[this.allTweets.length - 1].createdAt
         }`;
       }
-
       await PostService.getPosts(url, this.jwt).then(async (response) => {
         if (response.data.posts.length) {
           await this.fetchTweets(response.data.posts);

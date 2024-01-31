@@ -134,17 +134,32 @@ const followUser = async (req, res) => {
     }
     const found = user.following.includes(id);
     if (found) {
+      //unfollow user
       await user.following.pull({ _id: id });
+
+      const followingEntry = user.allFollowing.find(
+        (entry) => entry.user.toString() === id.toString() && entry.isActive
+      );
+      followingEntry.isActive = false;
+      followingEntry.endedAt = Date.now();
+
       await user.save();
       await followedUser.followers.pull({ _id: user._id });
       await followedUser.save();
+
       return res.status(200).json({
         success: true,
         message: 'Unfollowed user',
         user,
       });
     } else {
+      //follow user
       await user.following.push({ _id: id });
+      user.allFollowing.push({
+        user: id,
+        isActive: true,
+        startedAt: Date.now(),
+      });
       await user.save();
       await followedUser.followers.push({ _id: user._id });
       await followedUser.save();
@@ -179,6 +194,13 @@ const blockUser = async (req, res) => {
     const isFollowingUser = user.following.includes(id);
     if (isFollowingUser) {
       await user.following.pull({ _id: id });
+
+      const followingEntry = user.allFollowing.find(
+        (entry) => entry.user.toString() === id.toString() && entry.isActive
+      );
+      followingEntry.isActive = false;
+      followingEntry.endedAt = Date.now();
+
       await user.save();
       await userToBlock.followers.pull({ _id: user._id });
       await userToBlock.save();
