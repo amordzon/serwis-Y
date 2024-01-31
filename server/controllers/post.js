@@ -154,6 +154,13 @@ const getPosts = async (req, res) => {
 
     if (postType == 'following') {
       const followingEntries = currUser.allFollowing;
+      if (!followingEntries.length) {
+        return res.status(200).json({
+          success: true,
+          message: 'All posts',
+          posts: [],
+        });
+      }
       condition = {
         $and: [
           { user: { $nin: usersBlocked } },

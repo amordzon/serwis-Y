@@ -2,7 +2,7 @@ import axios from "axios";
 
 const PostService = {
   async postSubmission(reqBody, jwt) {
-    const response = await axios.post("/posts", reqBody, {
+    const response = await axios.post("/api/posts", reqBody, {
       headers: {
         Authorization: `Bearer ${jwt}`,
         "content-type": "multipart/form-data",
@@ -19,7 +19,7 @@ const PostService = {
     return response;
   },
   async getPost(postID, jwt) {
-    const response = await axios.get("/posts/post/" + postID, {
+    const response = await axios.get("/api/posts/post/" + postID, {
       headers: {
         Authorization: `Bearer ${jwt}`,
       },
