@@ -7,6 +7,7 @@ const cors = require('cors');
 const https = require('https');
 const socketInitializer = require('./sockets/socket');
 const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
 
@@ -14,7 +15,11 @@ require('./auth/passportAuth')(passport);
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:8080', 'https://localhost:8080'];
+const allowedOrigins = [
+  'http://localhost:8080',
+  'https://localhost:8080',
+  'https://localhost:3000',
+];
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -34,6 +39,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+app.get(/^\/(?!api).*/, function (req, res) {
+  res.sendFile(path.join(__dirname, '../', 'client', 'dist', 'index.html'));
+});
+
 const privateKey = fs.readFileSync('../certs/example.com+5-key.pem', 'utf8');
 const certificate = fs.readFileSync('../certs/example.com+5.pem', 'utf8');
 
@@ -50,9 +61,17 @@ const userRouter = require('./routes/user');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 
-app.use('/users', passport.authenticate('jwt', { session: false }), userRouter);
-app.use('/posts', passport.authenticate('jwt', { session: false }), postRouter);
-app.use('/auth', authRouter);
+app.use(
+  '/api/users',
+  passport.authenticate('jwt', { session: false }),
+  userRouter
+);
+app.use(
+  '/api/posts',
+  passport.authenticate('jwt', { session: false }),
+  postRouter
+);
+app.use('/api/auth', authRouter);
 
 mongoose
   .connect(
