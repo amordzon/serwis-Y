@@ -3,7 +3,7 @@ const { Server } = require('socket.io');
 const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: 'https://localhost:3000',
+      origin: process.env.CALLBACK_URL,
       methods: ['GET', 'POST'],
     },
   });

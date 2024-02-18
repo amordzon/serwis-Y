@@ -34,7 +34,7 @@ export default {
   actions: {
     setupSocketConnection({ commit, rootState }) {
       console.log("polacz");
-      const socket = io("https://localhost:3000/", {
+      const socket = io(process.env.VUE_APP_BACKEND_ENDPOINT, {
         auth: {
           token: JSON.stringify(rootState.user.jwt),
         },

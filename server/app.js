@@ -19,6 +19,7 @@ const allowedOrigins = [
   'http://localhost:8080',
   'https://localhost:8080',
   'https://localhost:3000',
+  process.env.CALLBACK_URL,
 ];
 app.use(
   cors({
